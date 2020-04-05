@@ -126,26 +126,24 @@ int main()
 	cout << "Created " << vertexes.size() << " vertexes." << endl;
 
 	// Dynamically allocated table for Adjacency Matrix
-	int** AdjTab = new int* [vertexes.size()];
+	int** AdjTab = new int* [vertexes.size()]{ 0 };
 	for (int i = 0; i < vertexes.size(); i++)
 	{
-		AdjTab[i] = new int[vertexes.size()];
+		AdjTab[i] = new int[vertexes.size()]{ 0 };
 	}
 
 	// Generating Edges
-	if (graph_type == 0) // Undirected Graph
+	for (int i = 0; i < vertexes.size(); i++)
 	{
-		for (int i = 0; i < vertexes.size(); i++)
+		for (int j = 0; j < vertexes.size(); j++)
 		{
-			for (int j = 0; j < vertexes.size(); j++)
-			{
-				if (i == j) {
-					AdjTab[i][j] = 0;
-				}
-				else if (j < i) {
-					AdjTab[i][j] = AdjTab[j][i];
-				}
-				else {
+			if (i == j);
+			else if (j < i) {
+				if (graph_type == 0) AdjTab[i][j] = AdjTab[j][i]; // For Undirected Graph Only
+			}
+			else {
+				if (graph_type == 0) // Undirected Graph
+				{
 					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnOut() > 0)
 					{
 						if (genConn()) // 50% chance to create an edge between vertexes
@@ -154,23 +152,10 @@ int main()
 							vertexes[j].addConnOut(&vertexes[i]);
 							AdjTab[i][j] = 1;
 						}
-						else AdjTab[i][j] = 0;
 					}
-					else AdjTab[i][j] = 0;
 				}
-			}
-		}
-	}
-	else // Directed Graph
-	{
-		for (int i = 0; i < vertexes.size(); i++)
-		{
-			for (int j = 0; j < vertexes.size(); j++)
-			{
-				if (i == j) {
-					AdjTab[i][j] = 0;
-				}
-				else {
+				else // Directed Graph
+				{
 					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnIn() > 0)
 					{
 						if (genConn()) // 50% chance to create an edge between vertexes
@@ -179,9 +164,7 @@ int main()
 							vertexes[j].addConnIn(&vertexes[i]);
 							AdjTab[i][j] = 1;
 						}
-						else AdjTab[i][j] = 0;
 					}
-					else AdjTab[i][j] = 0;
 				}
 			}
 		}
