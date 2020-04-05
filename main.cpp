@@ -2,32 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <vector>
 
 using namespace std;
 
-int max_node_degree_out = 0, max_node_degree_in = 0; //Max degree of the node
-int graph_type = 0; //1 - directed; 0 - undirected
-
 class Vertex {
 
-	int max_degree_out, max_degree_in;
-	int avail_out_conn, avail_in_conn;
+	int id, max_degree_out, max_degree_in;
+	vector<Vertex*> adjListIn, adjListOut;
 
 public:
 
-	Vertex() {
+	Vertex(int graph_type, int v_id, int max_node_degree_out, int max_node_degree_in) {
+
+		id = v_id;
 		max_degree_out = rand() % max_node_degree_out + 1;
-		if (graph_type == 1)
-		{
-			max_degree_in = rand() % max_node_degree_in + 1;
-		}
-		else {
-			max_degree_in = 0;
-		}
-		avail_out_conn = max_degree_out;
-		avail_in_conn = max_degree_in;
+		if (graph_type == 1) max_degree_in = rand() % max_node_degree_in + 1;
+		else max_degree_in = 0;
+
 	}
-	~Vertex() {}
+	~Vertex() { /** ????  ???? **/ }
 
 	int getMaxDegreeOut()
 	{
@@ -37,22 +31,34 @@ public:
 	{
 		return max_degree_in;
 	}
-	int getAvailOutConn()
+	int getAvailConnOut()
 	{
-		return avail_out_conn;
+		return max_degree_out - adjListOut.size();
 	}
-	int getAvailInConn()
+	int getAvailConnIn()
 	{
-		return avail_in_conn;
+		return max_degree_in - adjListIn.size();
 	}
-	void addInConn()
+	int getId()
 	{
-		avail_in_conn -= 1;
+		return id;
 	}
-	void addOutConn()
+	void addConnIn(Vertex* vertexPtr)
 	{
-		avail_out_conn -= 1;
+		adjListIn.push_back(vertexPtr);
 	}
+	void addConnOut(Vertex* vertexPtr)
+	{
+		adjListOut.push_back(vertexPtr);
+	}
+	void dispAdjListOut()
+	{
+		for (int i = 0; i < adjListOut.size(); i++)
+		{
+			cout << " -> " << adjListOut[i]->getId();
+		}
+	}
+	
 };
 
 bool genConn()
@@ -62,9 +68,36 @@ bool genConn()
 	else return true;
 }
 
+void dispAdjMatrix(int** AdjTab, int N)
+{
+	cout << "\nAdjacency Matrix:" << endl;
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			cout << AdjTab[i][j] << " ";
+		}
+		cout << endl;
+	}
+}
+
+void dispAdjList(vector<Vertex> &const vertexes, int N)
+{
+	cout << "\nAdjacency List:" << endl;
+	for (int i = 0; i < N; i++)
+	{
+		cout << vertexes[i].getId() << ":";
+		vertexes[i].dispAdjListOut();
+		cout << endl;
+	}
+}
+
 int main()
 {
 	srand(time(NULL));
+
+	int max_node_degree_out = 0, max_node_degree_in = 0; //Max degree of the node
+	int graph_type = 0; //1 - directed; 0 - undirected
 
 	do {
 		cout << "Choose type of the Graph [ 1 - Directed | 0 - Undirected ]: "; cin >> graph_type;
@@ -85,17 +118,26 @@ int main()
 		} while (max_node_degree_out <= 0);
 	}
 
-	const unsigned int vertex_num = 10; // Change to adjust the number of total Vertexes
+	vector<Vertex> vertexes;
+	for (int i = 0; i < (max_node_degree_out + rand()%5); i++)
+	{
+		vertexes.push_back( Vertex ( graph_type, i, max_node_degree_out, max_node_degree_in ) );
+	}
+	cout << "Created " << vertexes.size() << " vertexes." << endl;
 
-	Vertex vertex[vertex_num];
+	// Dynamically allocated table for Adjacency Matrix
+	int** AdjTab = new int* [vertexes.size()];
+	for (int i = 0; i < vertexes.size(); i++)
+	{
+		AdjTab[i] = new int[vertexes.size()];
+	}
 
-	int AdjTab[vertex_num][vertex_num] = { 0 };
-
+	// Generating Edges
 	if (graph_type == 0) // Undirected Graph
 	{
-		for (int i = 0; i < vertex_num; i++)
+		for (int i = 0; i < vertexes.size(); i++)
 		{
-			for (int j = 0; j < vertex_num; j++)
+			for (int j = 0; j < vertexes.size(); j++)
 			{
 				if (i == j) {
 					AdjTab[i][j] = 0;
@@ -104,62 +146,52 @@ int main()
 					AdjTab[i][j] = AdjTab[j][i];
 				}
 				else {
-					if (vertex[i].getAvailOutConn() > 0 && vertex[j].getAvailOutConn() > 0)
+					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnOut() > 0)
 					{
-						if (genConn())
+						if (genConn()) // 50% chance to create an edge between vertexes
 						{
-							vertex[i].addOutConn();
-							vertex[j].addOutConn();
+							vertexes[i].addConnOut(&vertexes[j]);
+							vertexes[j].addConnOut(&vertexes[i]);
 							AdjTab[i][j] = 1;
 						}
+						else AdjTab[i][j] = 0;
 					}
+					else AdjTab[i][j] = 0;
 				}
 			}
 		}
 	}
 	else // Directed Graph
 	{
-		for (int i = 0; i < vertex_num; i++)
+		for (int i = 0; i < vertexes.size(); i++)
 		{
-			for (int j = 0; j < vertex_num; j++)
+			for (int j = 0; j < vertexes.size(); j++)
 			{
 				if (i == j) {
 					AdjTab[i][j] = 0;
 				}
 				else {
-					if (vertex[i].getAvailOutConn() > 0 && vertex[j].getAvailInConn() > 0)
+					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnIn() > 0)
 					{
-						if (genConn())
+						if (genConn()) // 50% chance to create an edge between vertexes
 						{
-							vertex[i].addOutConn();
-							vertex[j].addInConn();
+							vertexes[i].addConnOut(&vertexes[j]);
+							vertexes[j].addConnIn(&vertexes[i]);
 							AdjTab[i][j] = 1;
 						}
+						else AdjTab[i][j] = 0;
 					}
+					else AdjTab[i][j] = 0;
 				}
 			}
 		}
 	}
-	cout << "\nNodes with corresponding connections:" << endl;
-	for (int i = 0; i < vertex_num; i++)
-	{
-		cout << i + 1;
-		for (int j = 0; j < vertex_num; j++)
-		{
-			if (AdjTab[i][j] == 1) {
-				cout << " -> " << j + 1;
-			}
-		}
-		cout << " ;" << endl;
-	}
-	cout << "\nAdjacency Matrix:" << endl;
-	for (int i = 0; i < vertex_num; i++)
-	{
-		for (int j = 0; j < vertex_num; j++)
-		{
-			cout << AdjTab[i][j] << " ";
-		}
-		cout << endl;
-	}
+	
+	dispAdjMatrix(AdjTab,vertexes.size());
+	dispAdjList(vertexes,vertexes.size());
+
+	delete[] AdjTab;
+
+	return 0;
 
 }
