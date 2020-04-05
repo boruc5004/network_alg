@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,7 +22,11 @@ public:
 		else max_degree_in = 0;
 
 	}
-	~Vertex() { /** ????  ???? **/ }
+	~Vertex() 
+	{
+		vector<Vertex*>().swap(adjListOut);
+		vector<Vertex*>().swap(adjListIn);
+	}
 
 	int getMaxDegreeOut()
 	{
@@ -43,6 +48,10 @@ public:
 	{
 		return id;
 	}
+	vector<Vertex*> getAdjListOut()
+	{
+		return adjListOut;
+	}
 	void addConnIn(Vertex* vertexPtr)
 	{
 		adjListIn.push_back(vertexPtr);
@@ -58,24 +67,38 @@ public:
 			cout << " -> " << adjListOut[i]->getId();
 		}
 	}
-	
 };
 
 bool genConn()
 {
-	int conn = rand() % 2;
+	int conn = rand() % 4;
 	if (conn == 0) return false;
 	else return true;
 }
 
-void dispAdjMatrix(int** AdjTab, int N)
+void dispAdjMatrix(vector<Vertex> &const vertexes, int N)
 {
 	cout << "\nAdjacency Matrix:" << endl;
 	for (int i = 0; i < N; i++)
 	{
+		vector<Vertex*> adjListOut = vertexes[i].getAdjListOut();
+		int k = adjListOut.size();
 		for (int j = 0; j < N; j++)
 		{
-			cout << AdjTab[i][j] << " ";
+			if (i == j) cout << "0 ";
+			else
+			{
+				if (k > 0)
+				{
+					if (adjListOut[(adjListOut.size()-1)-(k-1)]->getId() == j)
+					{
+						cout << "1 ";
+						k--;
+					}
+					else cout << "0 ";
+				}
+				else cout << "0 ";
+			}
 		}
 		cout << endl;
 	}
@@ -125,32 +148,22 @@ int main()
 	}
 	cout << "Created " << vertexes.size() << " vertexes." << endl;
 
-	// Dynamically allocated table for Adjacency Matrix
-	int** AdjTab = new int* [vertexes.size()]{ 0 };
-	for (int i = 0; i < vertexes.size(); i++)
-	{
-		AdjTab[i] = new int[vertexes.size()]{ 0 };
-	}
-
 	// Generating Edges
 	for (int i = 0; i < vertexes.size(); i++)
 	{
 		for (int j = 0; j < vertexes.size(); j++)
 		{
 			if (i == j);
-			else if (j < i) {
-				if (graph_type == 0) AdjTab[i][j] = AdjTab[j][i]; // For Undirected Graph Only
-			}
+			else if (j < i);
 			else {
 				if (graph_type == 0) // Undirected Graph
 				{
 					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnOut() > 0)
 					{
-						if (genConn()) // 50% chance to create an edge between vertexes
+						if (genConn()) // 25% chance to create an edge between vertexes
 						{
 							vertexes[i].addConnOut(&vertexes[j]);
 							vertexes[j].addConnOut(&vertexes[i]);
-							AdjTab[i][j] = 1;
 						}
 					}
 				}
@@ -158,11 +171,10 @@ int main()
 				{
 					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnIn() > 0)
 					{
-						if (genConn()) // 50% chance to create an edge between vertexes
+						if (genConn()) // 25% chance to create an edge between vertexes
 						{
 							vertexes[i].addConnOut(&vertexes[j]);
 							vertexes[j].addConnIn(&vertexes[i]);
-							AdjTab[i][j] = 1;
 						}
 					}
 				}
@@ -170,10 +182,10 @@ int main()
 		}
 	}
 	
-	dispAdjMatrix(AdjTab,vertexes.size());
+	dispAdjMatrix(vertexes,vertexes.size());
 	dispAdjList(vertexes,vertexes.size());
 
-	delete[] AdjTab;
+	vector<Vertex>().swap(vertexes); // Release memory after vector
 
 	return 0;
 
