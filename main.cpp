@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
+#include <list>
+#include <stack>
 #include <algorithm>
 
 using namespace std;
@@ -52,6 +54,10 @@ public:
 	{
 		return adjListOut;
 	}
+	vector<Vertex*> getAdjListIn()
+	{
+		return adjListIn;
+	}
 	void addConnIn(Vertex* vertexPtr)
 	{
 		adjListIn.push_back(vertexPtr);
@@ -76,21 +82,22 @@ bool genConn()
 	else return true;
 }
 
-void dispAdjMatrix(vector<Vertex> &const vertexes, int N)
+void dispAdjMatrix(vector<Vertex> &const vertexes)
 {
 	cout << "\nAdjacency Matrix:" << endl;
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < vertexes.size(); i++)
 	{
-		vector<Vertex*> adjListOut = vertexes[i].getAdjListOut();
+		vector<Vertex*> adjListOut = vertexes[i].getAdjListOut(); // vector of pointers to adjacent vertexes
 		int k = adjListOut.size();
-		for (int j = 0; j < N; j++)
+		for (int j = 0; j < vertexes.size(); j++)
 		{
 			if (i == j) cout << "0 ";
 			else
 			{
 				if (k > 0)
 				{
-					if (adjListOut[(adjListOut.size()-1)-(k-1)]->getId() == j)
+					if (adjListOut[(adjListOut.size()-1)-(k-1)]->getId() == j) // checks wheather there are any adjacent vertexes left on a list,
+																				// if not it fills the table with zeros
 					{
 						cout << "1 ";
 						k--;
@@ -104,14 +111,102 @@ void dispAdjMatrix(vector<Vertex> &const vertexes, int N)
 	}
 }
 
-void dispAdjList(vector<Vertex> &const vertexes, int N)
+void dispAdjList(vector<Vertex> &const vertexes)
 {
 	cout << "\nAdjacency List:" << endl;
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < vertexes.size(); i++)
 	{
 		cout << vertexes[i].getId() << ":";
 		vertexes[i].dispAdjListOut();
 		cout << endl;
+	}
+}
+
+void doBfs(vector<Vertex> &const vertexes)
+{
+	vector<bool> visited; // creates vector for visited vertexes
+	int visitedCounter = 0; // checksum to make sure every vertex has been visited
+	for (int i = 0; i < vertexes.size(); i++) // defaults all vector to false
+	{
+		visited.push_back(false);
+	}
+	list<Vertex*> queue; // creates queue for pointers to vertexes
+
+	while (vertexes.size() != visitedCounter)
+	{
+		int startVertex = 0;
+		do
+		{
+			startVertex = rand() % vertexes.size(); // randomly picks vertex
+		} while (visited[startVertex]); // exits when unvisited vertex has been chosen
+
+		visited[startVertex] = true; // notes that start vertex has been visited
+
+		queue.push_back(&vertexes[startVertex]); // adds start vertex to the queue to process
+
+		cout << "\nBFS: ";
+		while (!queue.empty()) // exits when the queue is empty
+		{
+			Vertex* currVertex = queue.front(); // points to the front of the queue
+			cout << " -> " << currVertex->getId(); // states that this vertex has been visited
+			queue.pop_front(); // pops the first vertex from the queue
+			for (int i = 0; i < currVertex->getAdjListOut().size(); i++) // iterates over adjacency list of that vertex
+			{
+				Vertex* adjVertex = currVertex->getAdjListOut()[i];
+				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
+				{
+					visited[adjVertex->getId()] = true; // if not, marks as visited
+					queue.push_back(adjVertex); // appends to queue
+				}
+			}
+
+		}
+	}
+}
+
+void doDfs(vector<Vertex>& const vertexes)
+{
+	vector<bool> visited; // creates vector for visited vertexes
+	int visitedCounter = 0; // checksum to make sure every vertex has been visited
+	for (int i = 0; i < vertexes.size(); i++) // defaults all vector to false
+	{
+		visited.push_back(false);
+	}
+	stack<Vertex*> stack; // creates stack for pointers to vertexes
+
+	while (vertexes.size() != visitedCounter)
+	{
+		int startVertex = 0;
+		do
+		{
+			startVertex = rand() % vertexes.size(); // randomly picks vertex
+		} while (visited[startVertex]); // exits when unvisited vertex has been chosen
+
+		visited[startVertex] = true; // notes that start vertex has been visited
+
+		stack.push(&vertexes[startVertex]); // adds start vertex to the stack to process
+
+		cout << "\nDFS: ";
+		while (!stack.empty()) // exits when the queue is empty
+		{
+			Vertex* currVertex = stack.top(); // points to the top of the stack
+			stack.pop();	// pops the top vertex from the stack
+
+			if (!visited[currVertex->getId()])
+			{
+				cout << " -> " << currVertex->getId(); // states that this vertex has been visited
+			}
+			
+			for (int i = 0; i < currVertex->getAdjListOut().size(); i++) // iterates over adjacency list of that vertex
+			{
+				Vertex* adjVertex = currVertex->getAdjListOut()[i];
+				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
+				{
+					visited[adjVertex->getId()] = true; // if not, marks as visited
+					stack.push(adjVertex); // appends to queue
+				}
+			}
+		}
 	}
 }
 
@@ -142,7 +237,7 @@ int main()
 	}
 
 	vector<Vertex> vertexes;
-	for (int i = 0; i < (max_node_degree_out + rand()%5); i++)
+	for (int i = 0; i < (max_node_degree_out + rand()%5); i++) // generates vertexes. Vertex count = maximal degree out + random(0-4)
 	{
 		vertexes.push_back( Vertex ( graph_type, i, max_node_degree_out, max_node_degree_in ) );
 	}
@@ -154,9 +249,8 @@ int main()
 		for (int j = 0; j < vertexes.size(); j++)
 		{
 			if (i == j);
-			else if (j < i);
 			else {
-				if (graph_type == 0) // Undirected Graph
+				if (graph_type == 0 && !(j < i)) // Undirected Graph
 				{
 					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnOut() > 0)
 					{
@@ -167,7 +261,7 @@ int main()
 						}
 					}
 				}
-				else // Directed Graph
+				else if (graph_type == 1)// Directed Graph
 				{
 					if (vertexes[i].getAvailConnOut() > 0 && vertexes[j].getAvailConnIn() > 0)
 					{
@@ -182,8 +276,15 @@ int main()
 		}
 	}
 	
-	dispAdjMatrix(vertexes,vertexes.size());
-	dispAdjList(vertexes,vertexes.size());
+	dispAdjMatrix(vertexes);
+	dispAdjList(vertexes);
+
+	int script_type = 0;
+	cout << "\nSelect search script. [BFS - 1 | DFS - 0]: ";
+	cin >> script_type;
+
+	if (script_type == 1) doBfs(vertexes); // BFS
+	else doDfs(vertexes); // DFS
 
 	vector<Vertex>().swap(vertexes); // Release memory after vector
 
