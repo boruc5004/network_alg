@@ -132,7 +132,7 @@ void doBfs(vector<Vertex> &const vertexes)
 	}
 	list<Vertex*> queue; // creates queue for pointers to vertexes
 
-	while (vertexes.size() != visitedCounter)
+	while (vertexes.size()-1 != visitedCounter)
 	{
 		int startVertex = 0;
 		do
@@ -156,6 +156,7 @@ void doBfs(vector<Vertex> &const vertexes)
 				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
 				{
 					visited[adjVertex->getId()] = true; // if not, marks as visited
+					visitedCounter++;
 					queue.push_back(adjVertex); // appends to queue
 				}
 			}
@@ -174,15 +175,13 @@ void doDfs(vector<Vertex>& const vertexes)
 	}
 	stack<Vertex*> stack; // creates stack for pointers to vertexes
 
-	while (vertexes.size() != visitedCounter)
+	while (vertexes.size()-1 != visitedCounter)
 	{
 		int startVertex = 0;
 		do
 		{
 			startVertex = rand() % vertexes.size(); // randomly picks vertex
 		} while (visited[startVertex]); // exits when unvisited vertex has been chosen
-
-		visited[startVertex] = true; // notes that start vertex has been visited
 
 		stack.push(&vertexes[startVertex]); // adds start vertex to the stack to process
 
@@ -195,14 +194,15 @@ void doDfs(vector<Vertex>& const vertexes)
 			if (!visited[currVertex->getId()])
 			{
 				cout << " -> " << currVertex->getId(); // states that this vertex has been visited
+				visited[currVertex->getId()] = true;
+				visitedCounter++;
 			}
 			
-			for (int i = 0; i < currVertex->getAdjListOut().size(); i++) // iterates over adjacency list of that vertex
+			for (int i = currVertex->getAdjListOut().size() - 1 ; i >= 0; i--) // iterates over adjacency list of that vertex
 			{
 				Vertex* adjVertex = currVertex->getAdjListOut()[i];
 				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
 				{
-					visited[adjVertex->getId()] = true; // if not, marks as visited
 					stack.push(adjVertex); // appends to queue
 				}
 			}
@@ -280,7 +280,7 @@ int main()
 	dispAdjList(vertexes);
 
 	int script_type = 0;
-	cout << "\nSelect search script. [BFS - 1 | DFS - 0]: ";
+	cout << "\nSelect search script [ BFS - 1 | DFS - 0 ]: ";
 	cin >> script_type;
 
 	if (script_type == 1) doBfs(vertexes); // BFS
