@@ -6,74 +6,9 @@
 #include <list>
 #include <stack>
 #include <algorithm>
+#include "Vertex.h"
 
 using namespace std;
-
-class Vertex {
-
-	int id, max_degree_out, max_degree_in;
-	vector<Vertex*> adjListIn, adjListOut;
-
-public:
-
-	Vertex(int graph_type, int v_id, int max_node_degree_out, int max_node_degree_in) {
-
-		id = v_id;
-		max_degree_out = rand() % max_node_degree_out + 1;
-		if (graph_type == 1) max_degree_in = rand() % max_node_degree_in + 1;
-		else max_degree_in = 0;
-
-	}
-	~Vertex() 
-	{
-		vector<Vertex*>().swap(adjListOut);
-		vector<Vertex*>().swap(adjListIn);
-	}
-
-	int getMaxDegreeOut()
-	{
-		return max_degree_out;
-	}
-	int getMaxDegreeIn()
-	{
-		return max_degree_in;
-	}
-	int getAvailConnOut()
-	{
-		return max_degree_out - adjListOut.size();
-	}
-	int getAvailConnIn()
-	{
-		return max_degree_in - adjListIn.size();
-	}
-	int getId()
-	{
-		return id;
-	}
-	vector<Vertex*> getAdjListOut()
-	{
-		return adjListOut;
-	}
-	vector<Vertex*> getAdjListIn()
-	{
-		return adjListIn;
-	}
-	void addConnIn(Vertex* vertexPtr)
-	{
-		adjListIn.push_back(vertexPtr);
-	}
-	void addConnOut(Vertex* vertexPtr)
-	{
-		adjListOut.push_back(vertexPtr);
-	}
-	void dispAdjListOut()
-	{
-		for (int i = 0; i < adjListOut.size(); i++)
-		{
-			cout << " -> " << adjListOut[i]->getId();
-		}
-	}
-};
 
 bool genConn()
 {
