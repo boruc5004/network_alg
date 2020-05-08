@@ -1,11 +1,15 @@
+#ifndef VERTEX_H_
+#define VERTEX_H_
+
 #include <vector>
 #include <time.h>
 #include <iostream>
 
 class Vertex {
 
-	int id, max_degree_out, max_degree_in;
-	std::vector<Vertex*> adjListIn, adjListOut;
+	int max_degree_out_, max_degree_in_;
+	int id_;
+	std::vector<Vertex*> adjListIn_, adjListOut_;
 
 public:
 
@@ -22,4 +26,5 @@ public:
 	void addConnOut(Vertex* vertexPtr);
 	void dispAdjListOut();
 };
+#endif
 

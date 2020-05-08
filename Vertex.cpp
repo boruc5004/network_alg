@@ -2,67 +2,67 @@
 
 Vertex::Vertex(int graph_type, int v_id, int max_node_degree_out, int max_node_degree_in)
 {
-	id = v_id;
-	max_degree_out = rand() % max_node_degree_out + 1;
-	if (graph_type == 1) max_degree_in = rand() % max_node_degree_in + 1;
-	else max_degree_in = 0;
+	id_ = v_id;
+	max_degree_out_ = rand() % max_node_degree_out + 1;
+	if (graph_type == 1) max_degree_in_ = rand() % max_node_degree_in + 1;
+	else max_degree_in_ = 0;
 }
 
 Vertex::~Vertex()
 {
-	std::vector<Vertex*>().swap(adjListOut);
-	std::vector<Vertex*>().swap(adjListIn);
+	std::vector<Vertex*>().swap(adjListOut_);
+	std::vector<Vertex*>().swap(adjListIn_);
 }
 
 int Vertex::getMaxDegreeOut()
 {
-	return max_degree_out;
+	return max_degree_out_;
 }
 
 int Vertex::getMaxDegreeIn()
 {
-	return max_degree_in;
+	return max_degree_in_;
 }
 
 int Vertex::getAvailConnOut()
 {
-	return max_degree_out - adjListOut.size();
+	return max_degree_out_ - adjListOut_.size();
 }
 
 int Vertex::getAvailConnIn()
 {
-	return max_degree_in - adjListIn.size();
+	return max_degree_in_ - adjListIn_.size();
 }
 
 int Vertex::getId()
 {
-	return id;
+	return id_;
 }
 
 std::vector<Vertex*> Vertex::getAdjListOut()
 {
-	return adjListOut;
+	return adjListOut_;
 }
 
 std::vector<Vertex*> Vertex::getAdjListIn()
 {
-	return adjListIn;
+	return adjListIn_;
 }
 
 void Vertex::addConnIn(Vertex* vertexPtr)
 {
-	adjListIn.push_back(vertexPtr);
+	adjListIn_.push_back(vertexPtr);
 }
 
 void Vertex::addConnOut(Vertex* vertexPtr)
 {
-	adjListOut.push_back(vertexPtr);
+	adjListOut_.push_back(vertexPtr);
 }
 
 void Vertex::dispAdjListOut()
 {
-	for (int i = 0; i < adjListOut.size(); i++)
+	for (int i = 0; i < adjListOut_.size(); i++)
 	{
-		std::cout << " -> " << adjListOut[i]->getId();
+		std::cout << " -> " << adjListOut_[i]->getId();
 	}
 }
