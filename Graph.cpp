@@ -129,7 +129,7 @@ void Graph::doBfs()
 
 		queue.push_back(vertices_[startVertex]); // adds start vertex to the queue to process
 
-		std::cout << "\nBFS: ";
+		std::cout << "\nGraph " << id_ << " BFS: ";
 		while (!queue.empty()) // exits when the queue is empty
 		{
 			Vertex* currVertex = queue.front(); // points to the front of the queue
@@ -170,7 +170,7 @@ void Graph::doDfs()
 
 		stack.push(vertices_[startVertex]); // adds start vertex to the stack to process
 
-		std::cout << "\nDFS: ";
+		std::cout << "\nGraph " << id_ << " DFS: ";
 		while (!stack.empty()) // exits when the queue is empty
 		{
 			Vertex* currVertex = stack.top(); // points to the top of the stack
@@ -193,6 +193,21 @@ void Graph::doDfs()
 			}
 		}
 	}
+}
+
+void Graph::doKruskals()
+{
+	std::vector<Vertex*> vertices_sorted = vertices_; // to sort
+	qsort(vertices_sorted[0], vertices_sorted.size(), sizeof(vertices_sorted[0]), weightComp);
+}
+
+void Graph::doPrims()
+{
+}
+
+int Graph::weightComp(const void* vert_a, const void*vert_b)
+{
+	return 0;
 }
 
 bool Graph::genConn()

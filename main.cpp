@@ -48,8 +48,14 @@ int main()
 	cout << "\nSelect search script [ BFS - 1 | DFS - 0 ]: ";
 	cin >> script_type;
 
-	if (script_type == 1) graph->doBfs(); // BFS
-	else graph->doDfs(); // DFS
+	if (script_type == 1) graph->doBfs();
+	else graph->doDfs();
+
+	cout << "\n\nSelect MST algorithm [ Kruskal's - 1 | Prim's - 0 ]: ";
+	cin >> script_type;
+
+	if (script_type == 1) graph->doKruskals(); 
+	else graph->doPrims();
 
 	return 0;
 

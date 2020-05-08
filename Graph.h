@@ -29,6 +29,9 @@ public:
 	void dispAdjMatrix();
 	void doBfs();
 	void doDfs();
+	void doKruskals();
+	void doPrims();
+	int weightComp(const void* vert_a, const void* vert_b)
 
 };
 #endif
