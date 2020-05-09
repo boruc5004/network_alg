@@ -37,7 +37,7 @@ int main()
 	}
 
 	int number_of_verticies = max_node_degree_out + rand() % 5; //  Vertex count = maximal degree out + random(0-4)
-	Graph* graph = new Graph(0, graph_type, number_of_verticies, number_of_verticies); 
+	Graph* graph = new Graph(0, graph_type, number_of_verticies); 
 	graph->genVertices(max_node_degree_out, max_node_degree_in);
 	graph->genEdges();
 

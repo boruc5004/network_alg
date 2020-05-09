@@ -7,8 +7,6 @@
 #include "Vertex.h"
 #include <list>
 #include <stack>
-#include <algorithm>
-#include <functional>
 
 class Graph
 {
@@ -23,7 +21,7 @@ class Graph
 
 public:
 
-	Graph(int id, int graph_type, int V, int E);
+	Graph(int id, int graph_type, int V);
 	~Graph();
 
 	void genVertices(int max_degree_out, int max_degree_in);

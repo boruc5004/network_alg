@@ -1,11 +1,11 @@
 #include "Graph.h"
 
-Graph::Graph(int id, int graph_type, int V, int E)
+Graph::Graph(int id, int graph_type, int V)
 {
 	id_ = id;
 	graph_type_ = graph_type;
 	V_ = V;
-	E_ = E;
+	E_ = 0;
 	std::cout << "Created ";
 	if (graph_type_ == 0) std::cout << "un";
 	std::cout << "directed graph with id: " << id_ << ". " << std::endl;
@@ -29,9 +29,9 @@ void Graph::genVertices(int max_degree_out, int max_degree_in)
 
 void Graph::genEdges()
 {
-	for (int i = 0; i < E_; i++)
+	for (int i = 0; i < V_; i++)
 	{
-		for (int j = 0; j < E_; j++)
+		for (int j = 0; j < V_; j++)
 		{
 			if (i == j);
 			else {
@@ -43,8 +43,8 @@ void Graph::genEdges()
 						{
 							vertices_[i]->addConnOut(vertices_[j]);
 							vertices_[j]->addConnOut(vertices_[i]);
-							Edge* edge = new Edge(vertices_[i], vertices_[j], rand()%20 + 1);
-							edges_.push_back(edge);
+							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							E_++;
 						}
 					}
 				}
@@ -56,8 +56,8 @@ void Graph::genEdges()
 						{
 							vertices_[i]->addConnOut(vertices_[j]);
 							vertices_[j]->addConnIn(vertices_[i]);
-							Edge* edge = new Edge(vertices_[i], vertices_[j], rand() % 20 + 1);
-							edges_.push_back(edge);
+							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							E_++;
 						}
 					}
 				}
@@ -213,11 +213,12 @@ void Graph::doSortEdges()
 
 int Graph::weightComp(const void* edge_a, const void* edge_b)
 {
-	Edge* e_a = (Edge*)edge_a;
-	Edge* e_b = (Edge*)edge_b;
-	if (e_a->getWeight() > e_b->getWeight()) return -1;
-	if (e_a->getWeight() == e_b->getWeight()) return 0;
-	if (e_a->getWeight() < e_b->getWeight()) return 1;
+	//Edge* e_a = (Edge*)edge_a;
+	//Edge* e_b = (Edge*)edge_b;
+	//if (e_a->getWeight() > e_b->getWeight()) return -1;
+	//if (e_a->getWeight() == e_b->getWeight()) return 0;
+	//if (e_a->getWeight() < e_b->getWeight()) return 1;
+	return -1;
 }
 
 bool Graph::genConn()

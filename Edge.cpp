@@ -1,10 +1,10 @@
 #include "Edge.h"
 
-Edge::Edge(Vertex* src_vertex, Vertex* dest_vertex, int weight)
+Edge::Edge(Vertex* src_vertex, Vertex* dest_vertex)
 {
 	src_vertex_ = src_vertex;
 	dest_vertex_ = dest_vertex;
-	weight_ = weight;
+	weight_ = rand() % 20 + 1;
 }
 
 int Edge::getWeight()
