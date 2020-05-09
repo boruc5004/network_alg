@@ -81,11 +81,11 @@ void Graph::dispAdjList()
 void Graph::dispAdjMatrix()
 {
 	std::cout << "\nAdjacency Matrix of Graph " << id_ << ":" << std::endl;
-	for (auto i = 0; i < vertices_.size(); i++)
+	for (int i = 0; i < vertices_.size(); i++)
 	{
 		std::vector<Vertex*> adjListOut = vertices_[i]->getAdjListOut(); // vector of pointers to adjacent vertexes
 		auto k = adjListOut.size();
-		for (auto j = 0; j < vertices_.size(); j++)
+		for (int j = 0; j < vertices_.size(); j++)
 		{
 			if (i == j) std::cout << "0 ";
 			else
@@ -183,7 +183,7 @@ void Graph::doDfs()
 				visitedCounter++;
 			}
 
-			for (auto i = currVertex->getAdjListOut().size() - 1; i >= 0; i--) // iterates over adjacency list of that vertex
+			for (int i = currVertex->getAdjListOut().size() - 1; i >= 0; i--) // iterates over adjacency list of that vertex
 			{
 				Vertex* adjVertex = currVertex->getAdjListOut()[i];
 				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
@@ -197,25 +197,27 @@ void Graph::doDfs()
 
 void Graph::doKruskals()
 {
-	this->doSortEdges();
+	doSortEdges();
 }
 
 void Graph::doPrims()
 {
-	this->doSortEdges();
+	doSortEdges();
 }
 
 void Graph::doSortEdges()
 {
 	edges_sorted_ = edges_;
-	qsort(edges_sorted_[0], edges_sorted_.size(), sizeof(Edge), weightComp);
+	qsort(edges_sorted_[0], edges_sorted_.size(), sizeof(Edge), this->weightComp);
 }
 
 int Graph::weightComp(const void* edge_a, const void* edge_b)
 {
 	Edge* e_a = (Edge*)edge_a;
 	Edge* e_b = (Edge*)edge_b;
-	return e_a->getWeight() > e_b->getWeight();
+	if (e_a->getWeight() > e_b->getWeight()) return -1;
+	if (e_a->getWeight() == e_b->getWeight()) return 0;
+	if (e_a->getWeight() < e_b->getWeight()) return 1;
 }
 
 bool Graph::genConn()

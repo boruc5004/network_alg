@@ -7,6 +7,8 @@
 #include "Vertex.h"
 #include <list>
 #include <stack>
+#include <algorithm>
+#include <functional>
 
 class Graph
 {
@@ -33,7 +35,7 @@ public:
 	void doKruskals();
 	void doPrims();
 	void doSortEdges();
-	int weightComp(const void* vert_a, const void* vert_b);
+	static int weightComp(const void* edge_a, const void* edge_b);
 
 };
 #endif
