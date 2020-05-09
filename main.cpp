@@ -51,13 +51,17 @@ int main()
 	if (script_type == 1) graph->doBfs();
 	else graph->doDfs();
 
-	cout << "\n\nSelect MST algorithm [ Kruskal's - 1 | Prim's - 0 ]: ";
+	/*cout << "\n\nSelect MST algorithm [ Kruskal's - 1 | Prim's - 0 ]: ";
 	cin >> script_type;
 
 	if (script_type == 1) graph->doKruskals(); 
 	else graph->doPrims();
-
-	cout << "Sorted";
+*/
+	std::vector<Edge*> edges = graph->getEdges();
+	for (auto i = 0; i < graph->getE(); i++)
+	{
+		if (edges[i]->getWeight() > 20) cout << "Error with weight value!";
+	}
 
 	return 0;
 

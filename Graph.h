@@ -11,7 +11,6 @@
 class Graph
 {
 	std::vector<Edge*> edges_;
-	std::vector<Edge*> edges_sorted_; // where sorted edges will be
 	std::vector<Vertex*> vertices_;
 	int graph_type_; // type of a graph, 1 - directed | 0 - undirected
 	int V_; // number of vertices
@@ -33,6 +32,8 @@ public:
 	void doKruskals();
 	void doPrims();
 	void doSortEdges();
+	std::vector<Edge*> getEdges();
+	int getE();
 	static int weightComp(const void* edge_a, const void* edge_b);
 
 };

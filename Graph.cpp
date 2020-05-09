@@ -111,13 +111,13 @@ void Graph::doBfs()
 {
 	std::vector<bool> visited; // creates vector for visited vertexes
 	int visitedCounter = 0; // checksum to make sure every vertex has been visited
-	for (int i = 0; i < vertices_.size(); i++) // defaults all vector to false
+	for (int i = 0; i < vertices_.size(); i++) // defaults visited to false
 	{
 		visited.push_back(false);
 	}
 	std::list<Vertex*> queue; // creates queue for pointers to vertexes
 
-	while (vertices_.size() - 1 != visitedCounter)
+	while (vertices_.size() != visitedCounter)
 	{
 		int startVertex = 0;
 		do
@@ -126,6 +126,7 @@ void Graph::doBfs()
 		} while (visited[startVertex]); // exits when unvisited vertex has been chosen
 
 		visited[startVertex] = true; // notes that start vertex has been visited
+		visitedCounter++;
 
 		queue.push_back(vertices_[startVertex]); // adds start vertex to the queue to process
 
@@ -160,7 +161,7 @@ void Graph::doDfs()
 	}
 	std::stack<Vertex*> stack; // creates stack for pointers to vertexes
 
-	while (vertices_.size() - 1 != visitedCounter)
+	while (vertices_.size() != visitedCounter)
 	{
 		int startVertex = 0;
 		do
@@ -207,18 +208,27 @@ void Graph::doPrims()
 
 void Graph::doSortEdges()
 {
-	edges_sorted_ = edges_;
-	qsort(edges_sorted_[0], edges_sorted_.size(), sizeof(Edge), this->weightComp);
+	qsort(edges_[0], edges_.size(), sizeof(Edge), weightComp);
+}
+
+std::vector<Edge*> Graph::getEdges()
+{
+	return edges_;
+}
+
+int Graph::getE()
+{
+	return E_;
 }
 
 int Graph::weightComp(const void* edge_a, const void* edge_b)
 {
-	//Edge* e_a = (Edge*)edge_a;
-	//Edge* e_b = (Edge*)edge_b;
-	//if (e_a->getWeight() > e_b->getWeight()) return -1;
-	//if (e_a->getWeight() == e_b->getWeight()) return 0;
-	//if (e_a->getWeight() < e_b->getWeight()) return 1;
-	return -1;
+	Edge* e_a = *(Edge**)edge_a;
+	Edge* e_b = *(Edge**)edge_b;
+	if (e_a->getWeight() > e_b->getWeight()) return -1;
+	if (e_a->getWeight() == e_b->getWeight()) return 0;
+	if (e_a->getWeight() < e_b->getWeight()) return 1;
+	return 1;
 }
 
 bool Graph::genConn()
