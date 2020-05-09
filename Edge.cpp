@@ -6,3 +6,18 @@ Edge::Edge(Vertex* src_vertex, Vertex* dest_vertex, int weight)
 	dest_vertex_ = dest_vertex;
 	weight_ = weight;
 }
+
+int Edge::getWeight()
+{
+	return weight_;
+}
+
+Vertex* Edge::getSrcVertex()
+{
+	return src_vertex_;
+}
+
+Vertex* Edge::getDestVertex()
+{
+	return dest_vertex_;
+}

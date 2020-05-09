@@ -14,6 +14,9 @@ public:
 
 	Edge(Vertex* src_vertex, Vertex* dest_vertex, int weight);
 	~Edge();
+	int getWeight();
+	Vertex* getSrcVertex();
+	Vertex* getDestVertex();
 
 };
 #endif
