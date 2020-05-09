@@ -208,7 +208,13 @@ void Graph::doPrims()
 
 void Graph::doSortEdges()
 {
-	qsort(edges_[0], edges_.size(), sizeof(Edge), weightComp);
+	sort(edges_.begin(), edges_.end(), weightComp);
+}
+
+bool Graph::weightComp(Edge* edge_a, Edge* edge_b)
+{
+	if (edge_a->getWeight() < edge_b->getWeight()) return true;
+	else return false;
 }
 
 std::vector<Edge*> Graph::getEdges()
@@ -221,15 +227,6 @@ int Graph::getE()
 	return E_;
 }
 
-int Graph::weightComp(const void* edge_a, const void* edge_b)
-{
-	Edge* e_a = *(Edge**)edge_a;
-	Edge* e_b = *(Edge**)edge_b;
-	if (e_a->getWeight() > e_b->getWeight()) return -1;
-	if (e_a->getWeight() == e_b->getWeight()) return 0;
-	if (e_a->getWeight() < e_b->getWeight()) return 1;
-	return 1;
-}
 
 bool Graph::genConn()
 {

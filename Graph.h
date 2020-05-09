@@ -7,6 +7,7 @@
 #include "Vertex.h"
 #include <list>
 #include <stack>
+#include <algorithm>
 
 class Graph
 {
@@ -34,7 +35,8 @@ public:
 	void doSortEdges();
 	std::vector<Edge*> getEdges();
 	int getE();
-	static int weightComp(const void* edge_a, const void* edge_b);
+	//static int weightComp(const void* edge_a, const void* edge_b);
+	static bool weightComp(Edge* edge_a, Edge* edge_b);
 
 };
 #endif
