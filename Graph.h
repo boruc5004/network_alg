@@ -15,7 +15,6 @@ class Graph
 	std::vector<Vertex*> vertices_;
 	int graph_type_; // type of a graph, 1 - directed | 0 - undirected
 	int V_; // number of vertices
-	int E_; // number of edges
 	int id_; // id of graph
 	bool genConn();
 
@@ -34,9 +33,11 @@ public:
 	void doPrims();
 	void doSortEdges();
 	std::vector<Edge*> getEdges();
-	int getE();
-	//static int weightComp(const void* edge_a, const void* edge_b);
+	int getEdgeCount();
 	static bool weightComp(Edge* edge_a, Edge* edge_b);
+	void addEdge(Edge* edge);
+	void removeRecentlyAddedEdge();
+	bool checkForCycle();
 
 };
 #endif

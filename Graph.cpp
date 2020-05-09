@@ -5,7 +5,6 @@ Graph::Graph(int id, int graph_type, int V)
 	id_ = id;
 	graph_type_ = graph_type;
 	V_ = V;
-	E_ = 0;
 	std::cout << "Created ";
 	if (graph_type_ == 0) std::cout << "un";
 	std::cout << "directed graph with id: " << id_ << ". " << std::endl;
@@ -15,6 +14,7 @@ Graph::~Graph()
 {
 	std::vector<Edge*>().swap(edges_);
 	std::vector<Vertex*>().swap(vertices_);
+	std::cout << "Graph with id " << id_ << " has been removed." << std::endl;
 }
 
 void Graph::genVertices(int max_degree_out, int max_degree_in)
@@ -44,7 +44,6 @@ void Graph::genEdges()
 							vertices_[i]->addConnOut(vertices_[j]);
 							vertices_[j]->addConnOut(vertices_[i]);
 							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
-							E_++;
 						}
 					}
 				}
@@ -57,7 +56,6 @@ void Graph::genEdges()
 							vertices_[i]->addConnOut(vertices_[j]);
 							vertices_[j]->addConnIn(vertices_[i]);
 							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
-							E_++;
 						}
 					}
 				}
@@ -199,6 +197,19 @@ void Graph::doDfs()
 void Graph::doKruskals()
 {
 	doSortEdges();
+	int mst_edges_count = V_ - 1; // Minimum Spanning Tree edges count
+	Graph* graph = new Graph(id_ + rand() % 1000 + 1, graph_type_, V_); // create temporary graph
+	for (auto i = 0; i < edges_.size(); i++)
+	{
+		graph->addEdge(edges_[i]);
+		// check if cycle is formed
+		// cycle formed - graph->removeRecentlyAddedEdge();
+		// if not proceed
+
+		if (graph->getEdgeCount() == mst_edges_count) break;
+	}
+
+	delete graph;
 }
 
 void Graph::doPrims()
@@ -217,14 +228,39 @@ bool Graph::weightComp(Edge* edge_a, Edge* edge_b)
 	else return false;
 }
 
+void Graph::addEdge(Edge* edge)
+{
+	edges_.push_back(edge);
+	/*edge->getSrcVertex()->addConnOut(edge->getDestVertex());
+	edge->getDestVertex()->addConnIn(edge->getSrcVertex());*/
+}
+
+void Graph::removeRecentlyAddedEdge()
+{
+	/*edges_[edges_.size() - 1]->getSrcVertex()->removeConnOut());
+	edges_[edges_.size() - 1]->getDestVertex()->removeConnIn());*/
+	edges_.pop_back();
+}
+
+bool Graph::checkForCycle()
+{
+	// return true if cycle is formed, otherwise return false
+
+	std::vector<bool> visited_vertices;
+	for (auto i = 0; i < edges_.size(); i++)
+	{
+		edges_[i]->getSrcVertex()->getId()
+	}
+}
+
 std::vector<Edge*> Graph::getEdges()
 {
 	return edges_;
 }
 
-int Graph::getE()
+int Graph::getEdgeCount()
 {
-	return E_;
+	return edges_.size();
 }
 
 

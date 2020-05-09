@@ -59,6 +59,16 @@ void Vertex::addConnOut(Vertex* vertexPtr)
 	adjListOut_.push_back(vertexPtr);
 }
 
+void Vertex::removeConnIn()
+{
+	adjListIn_.pop_back();
+}
+
+void Vertex::removeConnOut()
+{
+	adjListOut_.pop_back();
+}
+
 void Vertex::dispAdjListOut()
 {
 	for (int i = 0; i < adjListOut_.size(); i++)

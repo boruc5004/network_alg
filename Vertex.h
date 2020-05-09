@@ -24,6 +24,8 @@ public:
 	std::vector<Vertex*> getAdjListIn();
 	void addConnIn(Vertex* vertexPtr);
 	void addConnOut(Vertex* vertexPtr);
+	void removeConnIn();
+	void removeConnOut();
 	void dispAdjListOut();
 };
 #endif
