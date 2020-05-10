@@ -235,7 +235,7 @@ void Graph::doDfs()
 		stack.push(vertices_[startVertex]); // adds start vertex to the stack to process
 
 		std::cout << "\nGraph " << id_ << " DFS: ";
-		while (!stack.empty()) // exits when the queue is empty
+		while (!stack.empty()) // exits when the stack is empty
 		{
 			Vertex* currVertex = stack.top(); // points to the top of the stack
 			stack.pop();	// pops the top vertex from the stack
@@ -252,7 +252,7 @@ void Graph::doDfs()
 				Vertex* adjVertex = currVertex->getAdjListOut()[i];
 				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
 				{
-					stack.push(adjVertex); // appends to queue
+					stack.push(adjVertex); // appends to stack
 				}
 			}
 		}
@@ -319,7 +319,7 @@ void Graph::removeRecentlyAddedEdge()
 
 bool Graph::checkForCycle() // return true if cycle is formed, otherwise return false
 {
-	if (graph_type_ == 1)
+	if (graph_type_ == 1) // for directed graphs using BFS
 	{
 		std::vector<bool> visited; // creates vector for visited vertexes
 		for (int i = 0; i < vertices_.size(); i++) // defaults visited to false
@@ -350,9 +350,43 @@ bool Graph::checkForCycle() // return true if cycle is formed, otherwise return 
 		}
 		return false;
 	}
-	else
+	else // for undirected graphs using DFS
 	{
-		return false;
+		std::vector<bool> visited; // creates vector for visited vertexes
+		for (int i = 0; i < vertices_.size(); i++) // defaults all vector to false
+		{
+			visited.push_back(false);
+		}
+		std::stack<Vertex*> stack; // creates stack for pointers to vertexes
+
+		int startVertex = edges_[0]->getSrcVertex()->getId();;
+
+		stack.push(vertices_[startVertex]); // adds start vertex to the stack to process
+
+		while (!stack.empty()) // exits when the stack is empty
+		{
+			Vertex* currVertex = stack.top(); // points to the top of the stack
+			stack.pop();	// pops the top vertex from the stack
+
+			if (!visited[currVertex->getId()])
+			{
+				visited[currVertex->getId()] = true;
+			}
+
+			for (int i = currVertex->getAdjListOut().size() - 1; i >= 0; i--) // iterates over adjacency list of that vertex
+			{
+				Vertex* adjVertex = currVertex->getAdjListOut()[i];
+				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
+				{
+					stack.push(adjVertex); // if not appends to stack
+				}
+				else
+				{
+					// it was visited before but it's a parent of this vertex
+
+				}
+			}
+		}
 	}
 }
 
