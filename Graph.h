@@ -21,6 +21,7 @@ class Graph
 public:
 
 	Graph(int id, int graph_type, int V);
+	Graph(const Graph* org_graph);
 	~Graph();
 
 	void genVertices(int max_degree_out, int max_degree_in);
@@ -38,6 +39,7 @@ public:
 	void addEdge(Edge* edge);
 	void removeRecentlyAddedEdge();
 	bool checkForCycle();
+	void removeAllEdges();
 
 };
 #endif

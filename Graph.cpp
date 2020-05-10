@@ -10,6 +10,18 @@ Graph::Graph(int id, int graph_type, int V)
 	std::cout << "directed graph with id: " << id_ << ". " << std::endl;
 }
 
+Graph::Graph(const Graph* org_graph)
+{
+	id_ = org_graph->id_ + rand() % 1000 + 100;
+	graph_type_ = org_graph->graph_type_;
+	V_ = org_graph->V_;
+	for (auto i = 0; i < org_graph->V_; i++)
+	{
+		vertices_.push_back(new Vertex(org_graph->graph_type_, org_graph->vertices_[i]->getId(),
+			org_graph->vertices_[i]->getMaxDegreeOut(), org_graph->vertices_[i]->getMaxDegreeIn()));
+	}
+}
+
 Graph::~Graph()
 {
 	std::vector<Edge*>().swap(edges_);
@@ -198,18 +210,16 @@ void Graph::doKruskals()
 {
 	doSortEdges();
 	int mst_edges_count = V_ - 1; // Minimum Spanning Tree edges count
-	Graph* graph = new Graph(id_ + rand() % 1000 + 1, graph_type_, V_); // create temporary graph
+	Graph temp_graph = this; // copy only Vertices id's, node's degrees
 	for (auto i = 0; i < edges_.size(); i++)
 	{
-		graph->addEdge(edges_[i]);
-		// check if cycle is formed
-		// cycle formed - graph->removeRecentlyAddedEdge();
-		// if not proceed
+		temp_graph.addEdge(edges_[i]);
+		if (temp_graph.checkForCycle()) temp_graph.removeRecentlyAddedEdge(); // if cyle formed then pop back recently added edge and pick
+		// another edge
 
-		if (graph->getEdgeCount() == mst_edges_count) break;
+		if (temp_graph.getEdgeCount() == mst_edges_count) break;
 	}
 
-	delete graph;
 }
 
 void Graph::doPrims()
@@ -231,26 +241,60 @@ bool Graph::weightComp(Edge* edge_a, Edge* edge_b)
 void Graph::addEdge(Edge* edge)
 {
 	edges_.push_back(edge);
-	/*edge->getSrcVertex()->addConnOut(edge->getDestVertex());
-	edge->getDestVertex()->addConnIn(edge->getSrcVertex());*/
+	edge->getSrcVertex()->addConnOut(edge->getDestVertex());
+	edge->getDestVertex()->addConnIn(edge->getSrcVertex());
 }
 
 void Graph::removeRecentlyAddedEdge()
 {
-	/*edges_[edges_.size() - 1]->getSrcVertex()->removeConnOut());
-	edges_[edges_.size() - 1]->getDestVertex()->removeConnIn());*/
+	edges_[edges_.size() - 1]->getSrcVertex()->removeConnOut();
+	edges_[edges_.size() - 1]->getDestVertex()->removeConnIn();
 	edges_.pop_back();
 }
 
-bool Graph::checkForCycle()
+bool Graph::checkForCycle() // return true if cycle is formed, otherwise return false
 {
-	// return true if cycle is formed, otherwise return false
-
-	std::vector<bool> visited_vertices;
-	for (auto i = 0; i < edges_.size(); i++)
+	std::vector<bool> visited; // creates vector for visited vertexes
+	//int visitedCounter = 0; // checksum to make sure every vertex has been visited
+	for (int i = 0; i < vertices_.size(); i++) // defaults visited to false
 	{
-		edges_[i]->getSrcVertex()->getId()
+		visited.push_back(false);
 	}
+	std::list<Vertex*> queue; // creates queue for pointers to vertexes
+
+	/*while (vertices_.size() != visitedCounter)
+	{*/
+		int startVertex = 0;
+		visited[startVertex] = true; // notes that start vertex has been visited
+		//visitedCounter++;
+
+		queue.push_back(vertices_[startVertex]); // adds start vertex to the queue to process
+
+		//std::cout << "\nGraph " << id_ << " BFS: ";
+		while (!queue.empty()) // exits when the queue is empty
+		{
+			Vertex* currVertex = queue.front(); // points to the front of the queue
+			//std::cout << " -> " << currVertex->getId(); // states that this vertex has been visited
+			queue.pop_front(); // pops the first vertex from the queue
+			for (int i = 0; i < currVertex->getAdjListOut().size(); i++) // iterates over adjacency list of that vertex
+			{
+				Vertex* adjVertex = currVertex->getAdjListOut()[i];
+				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
+				{
+					visited[adjVertex->getId()] = true; // if not, marks as visited
+					queue.push_back(adjVertex); // appends to queue
+				}
+				else return true;
+			}
+
+		}
+	//}
+		return false;
+}
+
+void Graph::removeAllEdges()
+{
+	std::vector<Edge*>().swap(edges_);
 }
 
 std::vector<Edge*> Graph::getEdges()
