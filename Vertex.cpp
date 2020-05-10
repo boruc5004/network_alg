@@ -69,6 +69,12 @@ void Vertex::removeConnOut()
 	adjListOut_.pop_back();
 }
 
+void Vertex::removeAllConn()
+{
+	std::vector<Vertex*>().swap(adjListOut_);
+	std::vector<Vertex*>().swap(adjListIn_);
+}
+
 void Vertex::dispAdjListOut()
 {
 	for (int i = 0; i < adjListOut_.size(); i++)

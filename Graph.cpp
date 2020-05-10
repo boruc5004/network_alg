@@ -5,7 +5,7 @@ Graph::Graph(int id, int graph_type, int V)
 	id_ = id;
 	graph_type_ = graph_type;
 	V_ = V;
-	std::cout << "Created ";
+	std::cout << "\nCreated ";
 	if (graph_type_ == 0) std::cout << "un";
 	std::cout << "directed graph with id: " << id_ << ". " << std::endl;
 }
@@ -20,13 +20,21 @@ Graph::Graph(const Graph* org_graph)
 		vertices_.push_back(new Vertex(org_graph->graph_type_, org_graph->vertices_[i]->getId(),
 			org_graph->vertices_[i]->getMaxDegreeOut(), org_graph->vertices_[i]->getMaxDegreeIn()));
 	}
+	for (auto i = 0; i < org_graph->edges_.size(); i++)
+	{
+		edges_.push_back(new Edge(vertices_[org_graph->edges_[i]->getSrcVertex()->getId()],
+			vertices_[org_graph->edges_[i]->getDestVertex()->getId()], org_graph->edges_[i]->getWeight()));
+	}
+	std::cout << "\nCreated ";
+	if (graph_type_ == 0) std::cout << "un";
+	std::cout << "directed temporary graph with id: " << id_ << ". " << std::endl;
 }
 
 Graph::~Graph()
 {
 	std::vector<Edge*>().swap(edges_);
 	std::vector<Vertex*>().swap(vertices_);
-	std::cout << "Graph with id " << id_ << " has been removed." << std::endl;
+	std::cout << "\nGraph with id " << id_ << " has been removed." << std::endl;
 }
 
 void Graph::genVertices(int max_degree_out, int max_degree_in)
@@ -39,41 +47,50 @@ void Graph::genVertices(int max_degree_out, int max_degree_in)
 	std::cout << "Graph " << id_ << " has generated " << vertices_.size() << " vertices." << std::endl;
 }
 
-void Graph::genEdges()
+void Graph::genEdges() // generates edges until edges make a complete graph
 {
-	for (int i = 0; i < V_; i++)
+	do
 	{
-		for (int j = 0; j < V_; j++)
+		// resets edges and vertices
+		std::vector<Edge*>().swap(edges_);
+		for (auto i = 0; i < vertices_.size(); i++)
 		{
-			if (i == j);
-			else {
-				if (graph_type_ == 0 && !(j < i)) // Undirected Graph
-				{
-					if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0)
+			vertices_[i]->removeAllConn();
+		}
+		for (int i = 0; i < V_; i++)
+		{
+			for (int j = 0; j < V_; j++)
+			{
+				if (i == j);
+				else {
+					if (graph_type_ == 0 && !(j < i)) // Undirected Graph
 					{
-						if (genConn()) // 25% chance to create an edge between vertexes
+						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0)
 						{
-							vertices_[i]->addConnOut(vertices_[j]);
-							vertices_[j]->addConnOut(vertices_[i]);
-							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							if (genConn()) // 25% chance to create an edge between vertexes
+							{
+								vertices_[i]->addConnOut(vertices_[j]);
+								vertices_[j]->addConnOut(vertices_[i]);
+								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							}
 						}
 					}
-				}
-				else if (graph_type_ == 1)// Directed Graph
-				{
-					if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0)
+					else if (graph_type_ == 1)// Directed Graph
 					{
-						if (genConn()) // 25% chance to create an edge between vertexes
+						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0)
 						{
-							vertices_[i]->addConnOut(vertices_[j]);
-							vertices_[j]->addConnIn(vertices_[i]);
-							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							if (genConn()) // 25% chance to create an edge between vertexes
+							{
+								vertices_[i]->addConnOut(vertices_[j]);
+								vertices_[j]->addConnIn(vertices_[i]);
+								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							}
 						}
 					}
 				}
 			}
 		}
-	}
+	} while (!checkForCompleteGraph());
 	std::cout << "Graph " << id_ << " has generated " << edges_.size() << " edges." << std::endl;
 }
 
@@ -115,6 +132,42 @@ void Graph::dispAdjMatrix()
 		}
 		std::cout << std::endl;
 	}
+}
+
+bool Graph::checkForCompleteGraph() // returns true for complete graph
+{
+	std::vector<bool> visited; // creates vector for visited vertexes
+	int visitedCounter = 0; // checksum to make sure every vertex has been visited
+	for (int i = 0; i < vertices_.size(); i++) // defaults all vector to false
+	{
+		visited.push_back(false);
+	}
+	std::stack<Vertex*> stack; // creates stack for pointers to vertexes
+	int startVertex = rand() % vertices_.size(); // randomly picks vertex
+	stack.push(vertices_[startVertex]); // adds start vertex to the stack to process
+
+	while (!stack.empty()) // exits when the queue is empty
+	{
+		Vertex* currVertex = stack.top(); // points to the top of the stack
+		stack.pop();	// pops the top vertex from the stack
+
+		if (!visited[currVertex->getId()])
+		{
+			visited[currVertex->getId()] = true;
+			visitedCounter++;
+		}
+
+		for (int i = currVertex->getAdjListOut().size() - 1; i >= 0; i--) // iterates over adjacency list of that vertex
+		{
+			Vertex* adjVertex = currVertex->getAdjListOut()[i];
+			if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
+			{
+				stack.push(adjVertex); // appends to queue
+			}
+		}
+	}
+	if (vertices_.size() == visitedCounter) return true;
+	else return false;
 }
 
 void Graph::doBfs()
@@ -208,18 +261,28 @@ void Graph::doDfs()
 
 void Graph::doKruskals()
 {
-	doSortEdges();
 	int mst_edges_count = V_ - 1; // Minimum Spanning Tree edges count
-	Graph temp_graph = this; // copy only Vertices id's, node's degrees
-	for (auto i = 0; i < edges_.size(); i++)
+	Graph temp_graph = this; //  copy graph
+	temp_graph.doSortEdges(); // sort edges
+	std::vector<Edge*> temp_edges = temp_graph.edges_; // copy edges to temporary vector
+	temp_graph.removeAllEdges(); // remove all the edges 
+	for (auto i = 0; i < temp_edges.size(); i++)
 	{
-		temp_graph.addEdge(edges_[i]);
+		temp_graph.addEdge(temp_edges[i]);
 		if (temp_graph.checkForCycle()) temp_graph.removeRecentlyAddedEdge(); // if cyle formed then pop back recently added edge and pick
 		// another edge
-
-		if (temp_graph.getEdgeCount() == mst_edges_count) break;
+		if (temp_graph.getEdgeCount() == mst_edges_count) break; // statement to break the loop when all 
+		// required edges has been added
 	}
+	std::cout << "Kruskal's algorithm results: " << std::endl;
+	temp_graph.dispAdjMatrix();
+	temp_graph.dispAdjList();
 
+	int script_type = 0;
+	std::cout << "\nSelect search script [ BFS - 1 | DFS - 0 ]: ";
+	std::cin >> script_type;
+	if (script_type == 1) temp_graph.doBfs();
+	else temp_graph.doDfs();
 }
 
 void Graph::doPrims()
@@ -242,39 +305,37 @@ void Graph::addEdge(Edge* edge)
 {
 	edges_.push_back(edge);
 	edge->getSrcVertex()->addConnOut(edge->getDestVertex());
-	edge->getDestVertex()->addConnIn(edge->getSrcVertex());
+	if (graph_type_ == 1) edge->getDestVertex()->addConnIn(edge->getSrcVertex());
+	else edge->getDestVertex()->addConnOut(edge->getSrcVertex());
 }
 
 void Graph::removeRecentlyAddedEdge()
 {
 	edges_[edges_.size() - 1]->getSrcVertex()->removeConnOut();
-	edges_[edges_.size() - 1]->getDestVertex()->removeConnIn();
+	if (graph_type_ == 1) edges_[edges_.size() - 1]->getDestVertex()->removeConnIn();
+	else edges_[edges_.size() - 1]->getDestVertex()->removeConnOut();
 	edges_.pop_back();
 }
 
 bool Graph::checkForCycle() // return true if cycle is formed, otherwise return false
 {
-	std::vector<bool> visited; // creates vector for visited vertexes
-	//int visitedCounter = 0; // checksum to make sure every vertex has been visited
-	for (int i = 0; i < vertices_.size(); i++) // defaults visited to false
+	if (graph_type_ == 1)
 	{
-		visited.push_back(false);
-	}
-	std::list<Vertex*> queue; // creates queue for pointers to vertexes
+		std::vector<bool> visited; // creates vector for visited vertexes
+		for (int i = 0; i < vertices_.size(); i++) // defaults visited to false
+		{
+			visited.push_back(false);
+		}
+		std::list<Vertex*> queue; // creates queue for pointers to vertexes
 
-	/*while (vertices_.size() != visitedCounter)
-	{*/
-		int startVertex = 0;
+		int startVertex = edges_[0]->getSrcVertex()->getId(); // get the id of the first vertex
 		visited[startVertex] = true; // notes that start vertex has been visited
-		//visitedCounter++;
 
 		queue.push_back(vertices_[startVertex]); // adds start vertex to the queue to process
 
-		//std::cout << "\nGraph " << id_ << " BFS: ";
 		while (!queue.empty()) // exits when the queue is empty
 		{
 			Vertex* currVertex = queue.front(); // points to the front of the queue
-			//std::cout << " -> " << currVertex->getId(); // states that this vertex has been visited
 			queue.pop_front(); // pops the first vertex from the queue
 			for (int i = 0; i < currVertex->getAdjListOut().size(); i++) // iterates over adjacency list of that vertex
 			{
@@ -286,10 +347,13 @@ bool Graph::checkForCycle() // return true if cycle is formed, otherwise return 
 				}
 				else return true;
 			}
-
 		}
-	//}
 		return false;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void Graph::removeAllEdges()

@@ -28,6 +28,7 @@ public:
 	void genEdges();
 	void dispAdjList();
 	void dispAdjMatrix();
+	bool checkForCompleteGraph();
 	void doBfs();
 	void doDfs();
 	void doKruskals();

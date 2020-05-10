@@ -57,6 +57,8 @@ int main()
 	if (script_type == 1) graph->doKruskals(); 
 	else graph->doPrims();
 
+	delete graph;
+
 	return 0;
 
 }

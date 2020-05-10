@@ -26,6 +26,7 @@ public:
 	void addConnOut(Vertex* vertexPtr);
 	void removeConnIn();
 	void removeConnOut();
+	void removeAllConn();
 	void dispAdjListOut();
 };
 #endif
