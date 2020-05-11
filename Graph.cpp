@@ -220,16 +220,16 @@ void Graph::doKruskals()
 	Graph temp_graph = this; //  copy graph
 	temp_graph.doSortEdges(); // sort edges
 	std::vector<Edge*> temp_edges = temp_graph.edges_; // copy edges to temporary vector
-	temp_graph.removeAllEdges(); // remove all the edges 
+	temp_graph.removeAllEdges(); // remove all the edges from the temporary graph
 	for (auto i = 0; i < temp_edges.size(); i++)
 	{
 		temp_graph.addEdge(temp_edges[i]);
-		if (temp_graph.checkForCycle()) temp_graph.removeRecentlyAddedEdge(); // if cyle formed then pop back recently added edge and pick
-		// another edge
+		if (temp_graph.checkForCycle()) temp_graph.removeRecentlyAddedEdge(); // if cyle formed then pop 
+		//back recently added edge and pick another edge
 		if (temp_graph.getEdgeCount() == mst_edges_count) break; // statement to break the loop when all 
 		// required edges has been added
 	}
-	std::cout << "Kruskal's algorithm results: " << std::endl;
+	std::cout << "\nKruskal's algorithm results: " << std::endl;
 	temp_graph.dispAdjMatrix();
 	temp_graph.dispAdjList();
 
@@ -242,7 +242,75 @@ void Graph::doKruskals()
 
 void Graph::doPrims()
 {
-	doSortEdges();
+	int* key = new int[V_]; // Key values used to pick minimum weight edge in cut  
+	bool* mstSet = new bool[V_]; // To represent set of vertices not yet included in MST  
+	Graph tmp_graph = this; //  Copy graph
+	std::vector<Edge*> tmp_edges = tmp_graph.edges_; // Copy edges to temporary vector
+	tmp_graph.removeAllEdges(); // Remove all the edges from the temporary graph
+
+	// Initialize all keys as INFINITE  
+	for (int i = 0; i < V_; i++)
+		key[i] = INT_MAX, mstSet[i] = false;
+
+	key[0] = 0; // Vertex with id 0 will be picked first
+	for (auto i = 0; i < V_-1; i++)
+	{
+		int u = minKey(key, mstSet); // Pick the minimum key vertex from the  
+        // set of vertices not yet included in MST  
+
+		mstSet[u] = true; // Add the picked vertex to the MST Set 
+		for (int v = 0; v < this->vertices_[u]->getAdjListOut().size(); v++)
+		{
+			Edge* tmp_edge = matchEdge(tmp_edges, tmp_graph.vertices_[u], tmp_graph.vertices_[this->vertices_[u]->getAdjListOut()[v]->getId()]); // find connecting edge between vertices
+			if (mstSet[v] == false &&  tmp_edge->getWeight() < key[v]) // update key only if it's smaller then current;
+				//consider only those vertices which are not yet included in MST
+			{
+				key[v] = tmp_edge->getWeight(); // update the key value
+				tmp_graph.addEdge(tmp_edge); // add this edge to the graph
+			}
+		}
+	}
+	std::cout << "\Prim's algorithm results: " << std::endl;
+	tmp_graph.dispAdjMatrix();
+	tmp_graph.dispAdjList();
+
+	int script_type = 0;
+	std::cout << "\nSelect search script [ BFS - 1 | DFS - 0 ]: ";
+	std::cin >> script_type;
+	if (script_type == 1) tmp_graph.doBfs();
+	else tmp_graph.doDfs();
+}
+
+int Graph::minKey(int key[], bool mstSet[])
+{
+	int min = INT_MAX, min_index{};
+	for (int v = 0; v < V_; v++)
+	{
+		if (mstSet[v] == false && key[v] < min)
+		{
+			min = key[v], min_index = v;
+		}
+	}
+	return min_index;
+}
+
+Edge* Graph::matchEdge(std::vector<Edge*> edges, Vertex* src_vertex, Vertex* dest_vertex)
+{
+	for (int i = 0; i < edges.size(); i++)
+	{
+		if (edges[i]->getSrcVertex() == src_vertex && edges[i]->getDestVertex() == dest_vertex)
+		{
+			return edges[i];
+		}
+	}
+	for (int i = 0; i < edges.size(); i++)
+	{
+		if (edges[i]->getSrcVertex() == dest_vertex && edges[i]->getDestVertex() == src_vertex)
+		{
+			return edges[i];
+		}
+	}
+	return nullptr;
 }
 
 void Graph::doSortEdges()

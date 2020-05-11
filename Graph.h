@@ -18,6 +18,8 @@ class Graph
 	int id_; // id of graph
 	bool genConn();
 	bool checkForCycleUtil(Vertex* v, bool visited[], int parent);
+	int minKey(int key[], bool mstSet[]);
+	Edge* matchEdge(std::vector<Edge*> edges, Vertex* src_vertex, Vertex* dest_vertex);
 
 public:
 
