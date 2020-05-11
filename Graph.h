@@ -17,6 +17,7 @@ class Graph
 	int V_; // number of vertices
 	int id_; // id of graph
 	bool genConn();
+	bool checkForCycleUtil(Vertex* v, bool visited[], int parent);
 
 public:
 
@@ -28,7 +29,6 @@ public:
 	void genEdges();
 	void dispAdjList();
 	void dispAdjMatrix();
-	bool checkForCompleteGraph();
 	void doBfs();
 	void doDfs();
 	void doKruskals();
@@ -40,7 +40,6 @@ public:
 	void addEdge(Edge* edge);
 	void removeRecentlyAddedEdge();
 	bool checkForCycle();
-	bool checkForCycleUtil(int v, bool visited[], int parent);
 	void removeAllEdges();
 
 };

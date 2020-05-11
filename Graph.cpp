@@ -49,48 +49,39 @@ void Graph::genVertices(int max_degree_out, int max_degree_in)
 
 void Graph::genEdges() // generates edges until edges make a complete graph
 {
-	//do
-	//{
-		// resets edges and vertices
-		std::vector<Edge*>().swap(edges_);
-		for (auto i = 0; i < vertices_.size(); i++)
+	for (int i = 0; i < V_; i++)
+	{
+		for (int j = 0; j < V_; j++)
 		{
-			vertices_[i]->removeAllConn();
-		}
-		for (int i = 0; i < V_; i++)
-		{
-			for (int j = 0; j < V_; j++)
-			{
-				if (i == j);
-				else {
-					if (graph_type_ == 0 && !(j < i)) // Undirected Graph
+			if (i == j);
+			else {
+				if (graph_type_ == 0 && !(j < i)) // Undirected Graph
+				{
+					if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0)
 					{
-						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0)
+						if (genConn()) // 25% chance to create an edge between vertexes
 						{
-							if (genConn()) // 25% chance to create an edge between vertexes
-							{
-								vertices_[i]->addConnOut(vertices_[j]);
-								vertices_[j]->addConnOut(vertices_[i]);
-								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
-							}
+							vertices_[i]->addConnOut(vertices_[j]);
+							vertices_[j]->addConnOut(vertices_[i]);
+							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
 						}
 					}
-					else if (graph_type_ == 1)// Directed Graph
+				}
+				else if (graph_type_ == 1)// Directed Graph
+				{
+					if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0)
 					{
-						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0)
+						if (genConn()) // 25% chance to create an edge between vertexes
 						{
-							if (genConn()) // 25% chance to create an edge between vertexes
-							{
-								vertices_[i]->addConnOut(vertices_[j]);
-								vertices_[j]->addConnIn(vertices_[i]);
-								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
-							}
+							vertices_[i]->addConnOut(vertices_[j]);
+							vertices_[j]->addConnIn(vertices_[i]);
+							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
 						}
 					}
 				}
 			}
 		}
-	//} while (!checkForCompleteGraph());
+	}
 	std::cout << "Graph " << id_ << " has generated " << edges_.size() << " edges." << std::endl;
 }
 
@@ -132,42 +123,6 @@ void Graph::dispAdjMatrix()
 		}
 		std::cout << std::endl;
 	}
-}
-
-bool Graph::checkForCompleteGraph() // returns true for complete graph
-{
-	std::vector<bool> visited; // creates vector for visited vertexes
-	int visitedCounter = 0; // checksum to make sure every vertex has been visited
-	for (int i = 0; i < vertices_.size(); i++) // defaults all vector to false
-	{
-		visited.push_back(false);
-	}
-	std::stack<Vertex*> stack; // creates stack for pointers to vertexes
-	int startVertex = rand() % vertices_.size(); // randomly picks vertex
-	stack.push(vertices_[startVertex]); // adds start vertex to the stack to process
-
-	while (!stack.empty()) // exits when the queue is empty
-	{
-		Vertex* currVertex = stack.top(); // points to the top of the stack
-		stack.pop();	// pops the top vertex from the stack
-
-		if (!visited[currVertex->getId()])
-		{
-			visited[currVertex->getId()] = true;
-			visitedCounter++;
-		}
-
-		for (int i = currVertex->getAdjListOut().size() - 1; i >= 0; i--) // iterates over adjacency list of that vertex
-		{
-			Vertex* adjVertex = currVertex->getAdjListOut()[i];
-			if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
-			{
-				stack.push(adjVertex); // appends to queue
-			}
-		}
-	}
-	if (vertices_.size() == visitedCounter) return true;
-	else return false;
 }
 
 void Graph::doBfs()
@@ -319,39 +274,37 @@ void Graph::removeRecentlyAddedEdge()
 
 bool Graph::checkForCycle() // return true if cycle is formed, otherwise return false
 {
-	// Mark all the vertices as not visited and not part of recursion 
-	// stack 
+	// Mark all the vertices as not visited and not part of recursion stack
 	bool* visited = new bool[V_];
 	for (int i = 0; i < V_; i++)
 		visited[i] = false;
 
-	// Call the recursive helper function to detect cycle in different 
-	// DFS trees 
+	// Call the recursive helper function to detect cycle in different DFS trees 
 	for (int i = 0; i < V_; i++)
 		if (!visited[i]) // Don't recur for i if it is already visited 
-			if (checkForCycleUtil(i, visited, -1))
+			if (checkForCycleUtil(vertices_[i], visited, -1))
 				return true;
 	return false;
 }
 
-bool Graph::checkForCycleUtil(int v, bool visited[], int parent)
+bool Graph::checkForCycleUtil(Vertex* v, bool visited[], int parent)
 {
 	// Mark the current node as visited 
-	visited[v] = true;
+	visited[v->getId()] = true;
 
 	// Recur for all the vertices adjacent to this vertex 
-	for (auto i = 0; i < vertices_[v]->getAdjListOut().size(); ++i)
+	for (auto i = 0; i < v->getAdjListOut().size(); ++i)
 	{
 		// If an adjacent is not visited, then recur for that adjacent 
-		if (!visited[vertices_[v]->getAdjListOut()[i]->getId()])
+		if (!visited[v->getAdjListOut()[i]->getId()])
 		{
-			if (checkForCycleUtil(vertices_[v]->getAdjListOut()[i]->getId(), visited, v))
+			if (checkForCycleUtil(v->getAdjListOut()[i], visited, v->getId()))
 				return true;
 		}
 
 		// If an adjacent is visited and not parent of current vertex, 
 		// then there is a cycle. 
-		else if (vertices_[v]->getAdjListOut()[i]->getId() != parent)
+		else if (v->getAdjListOut()[i]->getId() != parent)
 			return true;
 	}
 	return false;
