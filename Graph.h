@@ -40,6 +40,7 @@ public:
 	void addEdge(Edge* edge);
 	void removeRecentlyAddedEdge();
 	bool checkForCycle();
+	bool checkForCycleUtil(int v, bool visited[], int parent);
 	void removeAllEdges();
 
 };

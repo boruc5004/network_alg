@@ -49,8 +49,8 @@ void Graph::genVertices(int max_degree_out, int max_degree_in)
 
 void Graph::genEdges() // generates edges until edges make a complete graph
 {
-	do
-	{
+	//do
+	//{
 		// resets edges and vertices
 		std::vector<Edge*>().swap(edges_);
 		for (auto i = 0; i < vertices_.size(); i++)
@@ -90,7 +90,7 @@ void Graph::genEdges() // generates edges until edges make a complete graph
 				}
 			}
 		}
-	} while (!checkForCompleteGraph());
+	//} while (!checkForCompleteGraph());
 	std::cout << "Graph " << id_ << " has generated " << edges_.size() << " edges." << std::endl;
 }
 
@@ -319,75 +319,42 @@ void Graph::removeRecentlyAddedEdge()
 
 bool Graph::checkForCycle() // return true if cycle is formed, otherwise return false
 {
-	if (graph_type_ == 1) // for directed graphs using BFS
+	// Mark all the vertices as not visited and not part of recursion 
+	// stack 
+	bool* visited = new bool[V_];
+	for (int i = 0; i < V_; i++)
+		visited[i] = false;
+
+	// Call the recursive helper function to detect cycle in different 
+	// DFS trees 
+	for (int i = 0; i < V_; i++)
+		if (!visited[i]) // Don't recur for i if it is already visited 
+			if (checkForCycleUtil(i, visited, -1))
+				return true;
+	return false;
+}
+
+bool Graph::checkForCycleUtil(int v, bool visited[], int parent)
+{
+	// Mark the current node as visited 
+	visited[v] = true;
+
+	// Recur for all the vertices adjacent to this vertex 
+	for (auto i = 0; i < vertices_[v]->getAdjListOut().size(); ++i)
 	{
-		std::vector<bool> visited; // creates vector for visited vertexes
-		for (int i = 0; i < vertices_.size(); i++) // defaults visited to false
+		// If an adjacent is not visited, then recur for that adjacent 
+		if (!visited[vertices_[v]->getAdjListOut()[i]->getId()])
 		{
-			visited.push_back(false);
+			if (checkForCycleUtil(vertices_[v]->getAdjListOut()[i]->getId(), visited, v))
+				return true;
 		}
-		std::list<Vertex*> queue; // creates queue for pointers to vertexes
 
-		int startVertex = edges_[0]->getSrcVertex()->getId(); // get the id of the first vertex
-		visited[startVertex] = true; // notes that start vertex has been visited
-
-		queue.push_back(vertices_[startVertex]); // adds start vertex to the queue to process
-
-		while (!queue.empty()) // exits when the queue is empty
-		{
-			Vertex* currVertex = queue.front(); // points to the front of the queue
-			queue.pop_front(); // pops the first vertex from the queue
-			for (int i = 0; i < currVertex->getAdjListOut().size(); i++) // iterates over adjacency list of that vertex
-			{
-				Vertex* adjVertex = currVertex->getAdjListOut()[i];
-				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
-				{
-					visited[adjVertex->getId()] = true; // if not, marks as visited
-					queue.push_back(adjVertex); // appends to queue
-				}
-				else return true;
-			}
-		}
-		return false;
+		// If an adjacent is visited and not parent of current vertex, 
+		// then there is a cycle. 
+		else if (vertices_[v]->getAdjListOut()[i]->getId() != parent)
+			return true;
 	}
-	else // for undirected graphs using DFS
-	{
-		std::vector<bool> visited; // creates vector for visited vertexes
-		for (int i = 0; i < vertices_.size(); i++) // defaults all vector to false
-		{
-			visited.push_back(false);
-		}
-		std::stack<Vertex*> stack; // creates stack for pointers to vertexes
-
-		int startVertex = edges_[0]->getSrcVertex()->getId();;
-
-		stack.push(vertices_[startVertex]); // adds start vertex to the stack to process
-
-		while (!stack.empty()) // exits when the stack is empty
-		{
-			Vertex* currVertex = stack.top(); // points to the top of the stack
-			stack.pop();	// pops the top vertex from the stack
-
-			if (!visited[currVertex->getId()])
-			{
-				visited[currVertex->getId()] = true;
-			}
-
-			for (int i = currVertex->getAdjListOut().size() - 1; i >= 0; i--) // iterates over adjacency list of that vertex
-			{
-				Vertex* adjVertex = currVertex->getAdjListOut()[i];
-				if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
-				{
-					stack.push(adjVertex); // if not appends to stack
-				}
-				else
-				{
-					// it was visited before but it's a parent of this vertex
-
-				}
-			}
-		}
-	}
+	return false;
 }
 
 void Graph::removeAllEdges()
