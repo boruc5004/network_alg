@@ -18,7 +18,7 @@ class Graph
 	int id_; // id of graph
 	bool genConn();
 	bool checkForCycleUtil(Vertex* v, bool visited[], int parent);
-	int minKey(int key[], bool mstSet[]);
+	int minKey(std::vector<int> key, std::vector<bool> mstSet);
 	Edge* matchEdge(std::vector<Edge*> edges, Vertex* src_vertex, Vertex* dest_vertex);
 
 public:
@@ -42,7 +42,9 @@ public:
 	void addEdge(Edge* edge);
 	void removeRecentlyAddedEdge();
 	bool checkForCycle();
+	bool checkIsComplete();
 	void removeAllEdges();
+	void removeAllVertices();
 
 };
 #endif

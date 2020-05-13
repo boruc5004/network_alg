@@ -49,39 +49,48 @@ void Graph::genVertices(int max_degree_out, int max_degree_in)
 
 void Graph::genEdges() // generates edges until edges make a complete graph
 {
-	for (int i = 0; i < V_; i++)
+	do
 	{
-		for (int j = 0; j < V_; j++)
+		this->removeAllEdges();
+		for (auto i = 0; i < V_; i++)
 		{
-			if (i == j);
-			else {
-				if (graph_type_ == 0 && !(j < i)) // Undirected Graph
-				{
-					if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0)
+			vertices_[i]->removeAllConn();
+		}
+
+		for (int i = 0; i < V_; i++)
+		{
+			for (int j = 0; j < V_; j++)
+			{
+				if (i == j);
+				else {
+					if (graph_type_ == 0 && !(j < i)) // Undirected Graph
 					{
-						if (genConn()) // 25% chance to create an edge between vertexes
+						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0)
 						{
-							vertices_[i]->addConnOut(vertices_[j]);
-							vertices_[j]->addConnOut(vertices_[i]);
-							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							if (genConn()) // 25% chance to create an edge between vertexes
+							{
+								vertices_[i]->addConnOut(vertices_[j]);
+								vertices_[j]->addConnOut(vertices_[i]);
+								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							}
 						}
 					}
-				}
-				else if (graph_type_ == 1)// Directed Graph
-				{
-					if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0)
+					else if (graph_type_ == 1)// Directed Graph
 					{
-						if (genConn()) // 25% chance to create an edge between vertexes
+						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0)
 						{
-							vertices_[i]->addConnOut(vertices_[j]);
-							vertices_[j]->addConnIn(vertices_[i]);
-							edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							if (genConn()) // 25% chance to create an edge between vertexes
+							{
+								vertices_[i]->addConnOut(vertices_[j]);
+								vertices_[j]->addConnIn(vertices_[i]);
+								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							}
 						}
 					}
 				}
 			}
 		}
-	}
+	} while (!checkIsComplete());
 	std::cout << "Graph " << id_ << " has generated " << edges_.size() << " edges." << std::endl;
 }
 
@@ -214,6 +223,40 @@ void Graph::doDfs()
 	}
 }
 
+bool Graph::checkIsComplete()
+{
+	std::vector<bool> visited(V_, false); // creates vector for visited vertexes
+	int visitedCounter = 0; // checksum for vertices
+	std::stack<Vertex*> stack; // creates stack for pointers to vertexes
+
+	int startVertex = 0;
+	stack.push(vertices_[startVertex]); // adds start vertex to the stack to process
+	while (!stack.empty()) // exits when the stack is empty
+	{
+		Vertex* currVertex = stack.top(); // points to the top of the stack
+		stack.pop();	// pops the top vertex from the stack
+
+		if (!visited[currVertex->getId()])
+		{
+			visited[currVertex->getId()] = true;
+			visitedCounter++;
+		}
+
+		for (int i = currVertex->getAdjListOut().size() - 1; i >= 0; i--) // iterates over adjacency list of that vertex
+		{
+			Vertex* adjVertex = currVertex->getAdjListOut()[i];
+			if (!visited[adjVertex->getId()]) // checks whether this vertex has been visited before
+			{
+				stack.push(adjVertex); // appends to stack
+			}
+		}
+	}
+	if (visitedCounter == V_)
+		return true;
+	else
+		return false;
+}
+
 void Graph::doKruskals()
 {
 	int mst_edges_count = V_ - 1; // Minimum Spanning Tree edges count
@@ -242,33 +285,38 @@ void Graph::doKruskals()
 
 void Graph::doPrims()
 {
-	int* key = new int[V_]; // Key values used to pick minimum weight edge in cut  
-	bool* mstSet = new bool[V_]; // To represent set of vertices not yet included in MST  
+	std::vector<int> key(V_, INT_MAX); // Key values used to pick minimum weight edge in cut. Initialize all keys as INFINITE  
+	std::vector<bool> mstSet(V_, false); // To represent set of vertices not yet included in MST 
+	std::vector<int> parent(V_, -1); // to store parent vertex
 	Graph tmp_graph = this; //  Copy graph
 	std::vector<Edge*> tmp_edges = tmp_graph.edges_; // Copy edges to temporary vector
 	tmp_graph.removeAllEdges(); // Remove all the edges from the temporary graph
 
-	// Initialize all keys as INFINITE  
-	for (int i = 0; i < V_; i++)
-		key[i] = INT_MAX, mstSet[i] = false;
-
 	key[0] = 0; // Vertex with id 0 will be picked first
-	for (auto i = 0; i < V_-1; i++)
+	for (auto i = 0; i < V_ - 1; i++)
 	{
 		int u = minKey(key, mstSet); // Pick the minimum key vertex from the  
         // set of vertices not yet included in MST  
 
 		mstSet[u] = true; // Add the picked vertex to the MST Set 
+
+		Edge* tmp_edge = {};
 		for (int v = 0; v < this->vertices_[u]->getAdjListOut().size(); v++)
 		{
-			Edge* tmp_edge = matchEdge(tmp_edges, tmp_graph.vertices_[u], tmp_graph.vertices_[this->vertices_[u]->getAdjListOut()[v]->getId()]); // find connecting edge between vertices
-			if (mstSet[v] == false &&  tmp_edge->getWeight() < key[v]) // update key only if it's smaller then current;
+			tmp_edge = matchEdge(tmp_edges, tmp_graph.vertices_[u], tmp_graph.vertices_[this->vertices_[u]->getAdjListOut()[v]->getId()]); 
+			// find connecting edge between vertices
+			if (mstSet[this->vertices_[u]->getAdjListOut()[v]->getId()] == false &&  
+				tmp_edge->getWeight() < key[this->vertices_[u]->getAdjListOut()[v]->getId()]) 
+				// update key only if it's smaller then current;
 				//consider only those vertices which are not yet included in MST
 			{
-				key[v] = tmp_edge->getWeight(); // update the key value
-				tmp_graph.addEdge(tmp_edge); // add this edge to the graph
+				key[this->vertices_[u]->getAdjListOut()[v]->getId()] = tmp_edge->getWeight(); // update the key value
+				parent[this->vertices_[u]->getAdjListOut()[v]->getId()] = u;
 			}
 		}
+		// after updating key values, add an edge to the temp graph
+		tmp_edge = matchEdge(tmp_edges, tmp_graph.vertices_[parent[minKey(key, mstSet)]], tmp_graph.vertices_[minKey(key, mstSet)]);
+		tmp_graph.addEdge(tmp_edge);
 	}
 	std::cout << "\Prim's algorithm results: " << std::endl;
 	tmp_graph.dispAdjMatrix();
@@ -281,7 +329,7 @@ void Graph::doPrims()
 	else tmp_graph.doDfs();
 }
 
-int Graph::minKey(int key[], bool mstSet[])
+int Graph::minKey(std::vector<int> key, std::vector<bool> mstSet)
 {
 	int min = INT_MAX, min_index{};
 	for (int v = 0; v < V_; v++)
@@ -298,17 +346,9 @@ Edge* Graph::matchEdge(std::vector<Edge*> edges, Vertex* src_vertex, Vertex* des
 {
 	for (int i = 0; i < edges.size(); i++)
 	{
-		if (edges[i]->getSrcVertex() == src_vertex && edges[i]->getDestVertex() == dest_vertex)
-		{
+		if ((edges[i]->getSrcVertex() == src_vertex && edges[i]->getDestVertex() == dest_vertex)
+			|| (edges[i]->getSrcVertex() == dest_vertex && edges[i]->getDestVertex() == src_vertex))
 			return edges[i];
-		}
-	}
-	for (int i = 0; i < edges.size(); i++)
-	{
-		if (edges[i]->getSrcVertex() == dest_vertex && edges[i]->getDestVertex() == src_vertex)
-		{
-			return edges[i];
-		}
 	}
 	return nullptr;
 }
@@ -381,6 +421,11 @@ bool Graph::checkForCycleUtil(Vertex* v, bool visited[], int parent)
 void Graph::removeAllEdges()
 {
 	std::vector<Edge*>().swap(edges_);
+}
+
+void Graph::removeAllVertices()
+{
+	std::vector<Vertex*>().swap(vertices_);
 }
 
 std::vector<Edge*> Graph::getEdges()
