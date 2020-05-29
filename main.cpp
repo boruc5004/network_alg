@@ -61,7 +61,7 @@ int main()
 	}
 
 	int dijkstry_src = 0, dijkstry_dest = 0;
-	cout << "\nType in a source vertex id: ";
+	cout << "\n[Dijkstra's algorithm]\nType in a source vertex id: ";
 	cin >> dijkstry_src;
 	cout << "Type in a destination vertex id: ";
 	cin >> dijkstry_dest;

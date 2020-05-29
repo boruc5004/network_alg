@@ -368,7 +368,7 @@ void Graph::doDijkstry(int src, int dest)
 			}
 		}
 	}
-	std::cout << "[Dijkstra's algorithm] Path cost from vertex " << src << " to vertex " << dest << " is " << key[dest] << "." << std::endl;
+	std::cout << "\n[Dijkstra's algorithm] Path cost from vertex " << src << " to vertex " << dest << " is " << key[dest] << "." << std::endl;
 	std::cout << dest << ": ";
 	int ptr = dest;
 	for (auto i = 0; i < V_; i++)
@@ -403,6 +403,21 @@ void Graph::doFloydWarshall()
 				if ((key[i][k] == INT_MAX) || (key[k][j] == INT_MAX)) continue;
 				int w = key[i][k] + key[k][j];
 				if (key[i][j] > w) key[i][j] = w;
+			}
+		}
+	}
+
+	std::cout << "\n[Floyd-Warshall Algorithm]"<<std::endl;
+	for (auto i = 0; i < V_; i++)
+	{
+		for (auto j = 0; j < V_; j++)
+		{
+			if (i != j)
+			{
+				std::cout << i << " -> " << j << " : ";
+				if (key[i][j] == INT_MAX) std::cout << "NO PATH";
+				else std::cout << key[i][j];
+				std::cout << std::endl;
 			}
 		}
 	}
