@@ -36,7 +36,7 @@ int main()
 		} while (max_node_degree_out <= 0);
 	}
 
-	int number_of_verticies = max_node_degree_out + rand() % 5; //  Vertex count = maximal degree out + random(0-4)
+	int number_of_verticies = max_node_degree_out + rand() % 1; //  Vertex count = maximal degree out + random(0-1)
 	Graph* graph = new Graph(0, graph_type, number_of_verticies); 
 	graph->genVertices(max_node_degree_out, max_node_degree_in);
 	graph->genEdges();
@@ -59,6 +59,13 @@ int main()
 		if (script_type == 1) graph->doKruskals();
 		else graph->doPrims();
 	}
+
+	int dijkstry_src = 0, dijkstry_dest = 0;
+	cout << "\nType in a source vertex id: ";
+	cin >> dijkstry_src;
+	cout << "Type in a destination vertex id: ";
+	cin >> dijkstry_dest;
+	graph->doDijkstry(dijkstry_src, dijkstry_dest);
 
 	delete graph;
 

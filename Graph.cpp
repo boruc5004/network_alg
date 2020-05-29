@@ -5,7 +5,7 @@ Graph::Graph(int id, int graph_type, int V)
 	id_ = id;
 	graph_type_ = graph_type;
 	V_ = V;
-	std::cout << "\nCreated ";
+	std::cout << "\n[Log] Created ";
 	if (graph_type_ == 0) std::cout << "un";
 	std::cout << "directed graph with id: " << id_ << ". " << std::endl;
 }
@@ -25,7 +25,7 @@ Graph::Graph(const Graph* org_graph)
 		edges_.push_back(new Edge(vertices_[org_graph->edges_[i]->getSrcVertex()->getId()],
 			vertices_[org_graph->edges_[i]->getDestVertex()->getId()], org_graph->edges_[i]->getWeight()));
 	}
-	std::cout << "\nCreated ";
+	std::cout << "\n[Log] Created ";
 	if (graph_type_ == 0) std::cout << "un";
 	std::cout << "directed temporary graph with id: " << id_ << ". " << std::endl;
 }
@@ -34,7 +34,7 @@ Graph::~Graph()
 {
 	std::vector<Edge*>().swap(edges_);
 	std::vector<Vertex*>().swap(vertices_);
-	std::cout << "\nGraph with id " << id_ << " has been removed." << std::endl;
+	std::cout << "\n[Log] Graph with id " << id_ << " has been removed." << std::endl;
 }
 
 void Graph::genVertices(int max_degree_out, int max_degree_in)
@@ -44,7 +44,7 @@ void Graph::genVertices(int max_degree_out, int max_degree_in)
 		Vertex* temp_vertex = new Vertex(graph_type_, i, max_degree_out, max_degree_in);
 		vertices_.push_back(temp_vertex);
 	}
-	std::cout << "Graph " << id_ << " has generated " << vertices_.size() << " vertices." << std::endl;
+	std::cout << "[Log] Graph " << id_ << " has generated " << vertices_.size() << " vertices." << std::endl;
 }
 
 void Graph::genEdges() // generates edges until edges make a complete graph
@@ -65,25 +65,29 @@ void Graph::genEdges() // generates edges until edges make a complete graph
 				else {
 					if (graph_type_ == 0 && !(j < i)) // Undirected Graph
 					{
-						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0)
+						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnOut() > 0 && genConn())
+							// 25% chance to create an edge between vertexes
 						{
-							if (genConn()) // 25% chance to create an edge between vertexes
-							{
 								vertices_[i]->addConnOut(vertices_[j]);
 								vertices_[j]->addConnOut(vertices_[i]);
 								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
-							}
 						}
 					}
-					else if (graph_type_ == 1)// Directed Graph
+					else if (graph_type_ == 1) // Directed Graph
 					{
-						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0)
+						if (vertices_[i]->getAvailConnOut() > 0 && vertices_[j]->getAvailConnIn() > 0 && genConn())
 						{
-							if (genConn()) // 25% chance to create an edge between vertexes
+							// check if the edge already exists
+							if (matchEdge(edges_, vertices_[i], vertices_[j]) == nullptr) // if not it creates new edge
 							{
 								vertices_[i]->addConnOut(vertices_[j]);
 								vertices_[j]->addConnIn(vertices_[i]);
 								edges_.push_back(new Edge(vertices_[i], vertices_[j]));
+							}
+							else // if exists just add to the lists
+							{
+								vertices_[i]->addConnOut(vertices_[j]);
+								vertices_[j]->addConnIn(vertices_[i]);
 							}
 						}
 					}
@@ -91,7 +95,7 @@ void Graph::genEdges() // generates edges until edges make a complete graph
 			}
 		}
 	} while (!checkIsComplete());
-	std::cout << "Graph " << id_ << " has generated " << edges_.size() << " edges." << std::endl;
+	std::cout << "[Log] Graph " << id_ << " has generated " << edges_.size() << " edges." << std::endl;
 }
 
 void Graph::dispAdjList()
@@ -327,6 +331,52 @@ void Graph::doPrims()
 	std::cin >> script_type;
 	if (script_type == 1) tmp_graph.doBfs();
 	else tmp_graph.doDfs();
+}
+
+void Graph::doDijkstry(int src, int dest)
+{
+	std::vector<int> key(V_, INT_MAX); //  Key values used to pick minimum weight edge in cut. Initialize all keys as INFINITE  
+	std::vector<bool> visited(V_, false); // To represent set of visited vertices. Initialize all as FALSE.
+	std::vector<int> parent(V_, -1); // to store parent vertex ids. Initialize all as -1.
+
+	/* Duplicating graph is copied from Prims so it's not optimised but get's the job done. :) */
+	Graph tmp_graph = this; //  Copy graph
+	std::vector<Edge*> tmp_edges = tmp_graph.edges_; // Copy edges to temporary vector
+	tmp_graph.removeAllEdges(); // Remove all the edges from the temporary graph
+
+	key[src] = 0; // set the weight of the starting vertex as 0.
+
+	for (auto i = 0; i < V_; i++)
+	{
+		int u = minKey(key, visited);
+		
+		visited[u] = true;
+
+		Edge* tmp_edge = {};
+		for (int v = 0; v < this->vertices_[u]->getAdjListOut().size(); v++)
+		{
+			tmp_edge = matchEdge(tmp_edges, tmp_graph.vertices_[u], tmp_graph.vertices_[this->vertices_[u]->getAdjListOut()[v]->getId()]);
+			// find connecting edge between vertices
+			if (visited[this->vertices_[u]->getAdjListOut()[v]->getId()] == false &&
+				(tmp_edge->getWeight() + key[u]) < key[this->vertices_[u]->getAdjListOut()[v]->getId()])
+				// update key only if it's smaller then current;
+				//consider only those vertices which are not yet included in MST
+			{
+				key[this->vertices_[u]->getAdjListOut()[v]->getId()] = tmp_edge->getWeight() + key[u]; // update the key value as the
+				// sum of the edge weight and the key value of it's parent
+				parent[this->vertices_[u]->getAdjListOut()[v]->getId()] = u;
+			}
+		}
+	}
+	std::cout << "[Dijkstra's algorithm] Path cost from vertex " << src << " to vertex " << dest << " is " << key[dest] << "." << std::endl;
+	std::cout << dest << ": ";
+	int ptr = dest;
+	for (auto i = 0; i < V_; i++)
+	{
+		ptr = parent[ptr];
+		if (ptr == -1) break;
+		std::cout << "-> " << ptr;
+	}
 }
 
 int Graph::minKey(std::vector<int> key, std::vector<bool> mstSet)

@@ -35,6 +35,7 @@ public:
 	void doDfs();
 	void doKruskals();
 	void doPrims();
+	void doDijkstry(int src, int dest);
 	void doSortEdges();
 	std::vector<Edge*> getEdges();
 	int getEdgeCount();
