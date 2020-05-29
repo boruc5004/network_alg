@@ -379,6 +379,36 @@ void Graph::doDijkstry(int src, int dest)
 	}
 }
 
+void Graph::doFloydWarshall()
+{
+	std::vector<std::vector<int>> key(V_, std::vector<int>(V_, INT_MAX)); // initialize vector values as INFINITE
+	for (auto i = 0; i < V_; i++)
+	{
+		for (int j = 0; j < V_; j++)
+		{
+			if (i == j) key[i][j] = 0;
+			else if (matchEdge(edges_, vertices_[i], vertices_[j]) != nullptr)
+			{
+				key[i][j] = matchEdge(edges_, vertices_[i], vertices_[j])->getWeight();
+			}
+		}
+	}
+
+	for (auto k = 0; k < V_; k++)
+	{
+		for (auto i = 0; i < V_; i++)
+		{
+			for (auto j = 0; j < V_; j++)
+			{
+				if ((key[i][k] == INT_MAX) || (key[k][j] == INT_MAX)) continue;
+				int w = key[i][k] + key[k][j];
+				if (key[i][j] > w) key[i][j] = w;
+			}
+		}
+	}
+
+}
+
 int Graph::minKey(std::vector<int> key, std::vector<bool> mstSet)
 {
 	int min = INT_MAX, min_index{};
@@ -394,13 +424,25 @@ int Graph::minKey(std::vector<int> key, std::vector<bool> mstSet)
 
 Edge* Graph::matchEdge(std::vector<Edge*> edges, Vertex* src_vertex, Vertex* dest_vertex)
 {
-	for (int i = 0; i < edges.size(); i++)
+	if (graph_type_ == 0)
 	{
-		if ((edges[i]->getSrcVertex() == src_vertex && edges[i]->getDestVertex() == dest_vertex)
-			|| (edges[i]->getSrcVertex() == dest_vertex && edges[i]->getDestVertex() == src_vertex))
-			return edges[i];
+		for (int i = 0; i < edges.size(); i++)
+		{
+			if ((edges[i]->getSrcVertex() == src_vertex && edges[i]->getDestVertex() == dest_vertex)
+				|| (edges[i]->getSrcVertex() == dest_vertex && edges[i]->getDestVertex() == src_vertex))
+				return edges[i];
+		}
+		return nullptr;
 	}
-	return nullptr;
+	else 
+	{
+		for (int i = 0; i < edges.size(); i++)
+		{
+			if ((edges[i]->getSrcVertex() == src_vertex && edges[i]->getDestVertex() == dest_vertex))
+				return edges[i];
+		}
+		return nullptr;
+	}
 }
 
 void Graph::doSortEdges()

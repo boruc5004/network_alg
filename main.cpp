@@ -67,6 +67,8 @@ int main()
 	cin >> dijkstry_dest;
 	graph->doDijkstry(dijkstry_src, dijkstry_dest);
 
+	graph->doFloydWarshall();
+
 	delete graph;
 
 	return 0;
